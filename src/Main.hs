@@ -1,8 +1,9 @@
 module Main where
 
-import Text.ParserCombinators.Parsec
-
+import Assembler
 import Parser
+
+import Text.ParserCombinators.Parsec
 
 main :: IO ()
 main = do

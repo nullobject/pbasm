@@ -1,9 +1,10 @@
 module ParserSpec where
 
+import Core
+import Parser
+
 import Test.Hspec
 import Text.ParserCombinators.Parsec
-
-import Parser
 
 fromRight :: Either a b -> b
 fromRight (Right b) = b
@@ -21,7 +22,7 @@ spec = do
   describe "address" $ do
     it "parses a 12-bit address" $ do
       let result = fromRight $ parse address "" "fff"
-      result `shouldBe` Address 4095
+      result `shouldBe` Address 0xFFF
 
     it "returns an error otherwise" $ do
       let result = show $ fromLeft $ parse address "" "ff"
@@ -30,7 +31,7 @@ spec = do
   describe "constant" $ do
     it "parses a 8-bit constant value" $ do
       let result = fromRight $ parse constant "" "ff"
-      result `shouldBe` Constant 255
+      result `shouldBe` Constant 0xFF
 
     it "returns an error otherwise" $ do
       let result = show $ fromLeft $ parse constant "" "f"
@@ -55,6 +56,7 @@ spec = do
                   \OR s0, FF\n\
                   \XOR s0, s1\n\
                   \XOR s0, FF\n\
+                  \SL0 s0\n\
                   \CALL FFF\n\
                   \JUMP FFF\n\
                   \RETURN\n"
@@ -63,14 +65,15 @@ spec = do
 
       result `shouldBe` [
           LoadInstruction (RegisterOperand Register0) (RegisterOperand Register1)
-        , LoadInstruction (RegisterOperand Register1) (ConstantOperand (Constant 255))
+        , LoadInstruction (RegisterOperand Register1) (ConstantOperand (Constant 0xFF))
         , AndInstruction (RegisterOperand Register0) (RegisterOperand Register1)
-        , AndInstruction (RegisterOperand Register0) (ConstantOperand (Constant 255))
+        , AndInstruction (RegisterOperand Register0) (ConstantOperand (Constant 0xFF))
         , OrInstruction (RegisterOperand Register0) (RegisterOperand Register1)
-        , OrInstruction (RegisterOperand Register0) (ConstantOperand (Constant 255))
+        , OrInstruction (RegisterOperand Register0) (ConstantOperand (Constant 0xFF))
         , XorInstruction (RegisterOperand Register0) (RegisterOperand Register1)
-        , XorInstruction (RegisterOperand Register0) (ConstantOperand (Constant 255))
-        , CallInstruction (AddressOperand (Address 4095))
-        , JumpInstruction (AddressOperand (Address 4095))
+        , XorInstruction (RegisterOperand Register0) (ConstantOperand (Constant 0xFF))
+        , ShiftLeft0Instruction (RegisterOperand Register0)
+        , CallInstruction (AddressOperand (Address 0xFFF))
+        , JumpInstruction (AddressOperand (Address 0xFFF))
         , ReturnInstruction
         ]

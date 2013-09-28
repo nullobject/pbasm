@@ -4,11 +4,11 @@
 -- code into an AST.
 module Parser where
 
+import Core
+
 import Control.Applicative hiding (optional, (<|>))
 import Numeric (readHex)
 import Text.ParserCombinators.Parsec
-
-import Core
 
 readHex' = fst . head . readHex
 
@@ -45,13 +45,14 @@ operand = choice [
 operands1 p = p <$> operand
 operands2 p = p <$> (operand <* spaces <* char ',' <* spaces) <*> operand
 
-loadInstruction   = string "LOAD" *> spaces *> (operands2 LoadInstruction)
-andInstruction    = string "AND"  *> spaces *> (operands2 AndInstruction)
-orInstruction     = string "OR"   *> spaces *> (operands2 OrInstruction)
-xorInstruction    = string "XOR"  *> spaces *> (operands2 XorInstruction)
-callInstruction   = string "CALL" *> spaces *> (operands1 CallInstruction)
-jumpInstruction   = string "JUMP" *> spaces *> (operands1 JumpInstruction)
-returnInstruction = ReturnInstruction <$ string "RETURN"
+loadInstruction       = string "LOAD" *> spaces *> (operands2 LoadInstruction)
+andInstruction        = string "AND"  *> spaces *> (operands2 AndInstruction)
+orInstruction         = string "OR"   *> spaces *> (operands2 OrInstruction)
+xorInstruction        = string "XOR"  *> spaces *> (operands2 XorInstruction)
+shiftLeft0Instruction = string "SL0"  *> spaces *> (operands1 ShiftLeft0Instruction)
+callInstruction       = string "CALL" *> spaces *> (operands1 CallInstruction)
+jumpInstruction       = string "JUMP" *> spaces *> (operands1 JumpInstruction)
+returnInstruction     = ReturnInstruction <$ string "RETURN"
 
 instruction :: CharParser () Instruction
 instruction = choice [
@@ -59,6 +60,7 @@ instruction = choice [
   , andInstruction
   , orInstruction
   , xorInstruction
+  , shiftLeft0Instruction
   , callInstruction
   , jumpInstruction
   , returnInstruction

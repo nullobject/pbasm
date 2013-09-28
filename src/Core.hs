@@ -43,6 +43,14 @@ data Instruction =
     -- Performs a bit-wise logical XOR operation on the first and second operands.
   | XorInstruction Operand Operand
 
+    -- SL0 sX
+    -- Performs a shift left operation on the operand.
+  | ShiftLeft0Instruction Operand
+
+    -- SL1 sX
+    -- Performs a shift left operation on the operand.
+  | ShiftLeft1Instruction Operand
+
     -- JUMP aaa
     -- Jumps to an address.
   | JumpInstruction Operand
