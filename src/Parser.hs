@@ -21,30 +21,30 @@ data Register =
   | RegisterC | RegisterD | RegisterE | RegisterF
   deriving (Enum, Eq, Show)
 
+data Operand =
+    AddressOperand  Address
+  | ConstantOperand Constant
+  | RegisterOperand Register
+  deriving (Eq, Show)
+
 data Instruction =
     -- LOAD sX, sY
-    -- Loads a value from the second register into the first register.
-    LoadRegisterInstruction Register Register
-
     -- LOAD sX, kk
-    -- Loads a constant value into a register.
-  | LoadConstantInstruction Register Constant
+    -- Loads a value into the first operand from the second operand.
+    LoadInstruction Operand Operand
 
     -- AND sX, sY
-    -- Performs a bit-wise logical AND operation on the first and second registers.
-  | AndRegisterInstruction Register Register
-
     -- AND sX, kk
-    -- Performs a bit-wise logical AND operation on a register and a constant.
-  | AndConstantInstruction Register Constant
+    -- Performs a bit-wise logical AND operation on the first and second operands.
+  | AndInstruction Operand Operand
 
     -- JUMP aaa
     -- Jumps to an address.
-  | JumpInstruction Address
+  | JumpInstruction Operand
 
     -- CALL aaa
     -- Calls a subroutine at an address.
-  | CallInstruction Address
+  | CallInstruction Operand
 
     -- RETURN
     -- Completes a subroutine.
@@ -68,18 +68,14 @@ register :: CharParser () Register
 register = char 's' *> (decode <$> hexDigit)
   where decode x = toEnum $ readHex' [x]
 
--- Parses two register names (separated by a comma) into a pair.
-registerPair :: CharParser () (Register, Register)
-registerPair = (,) <$> register <*> (char ',' *> spaces *> register)
+addressOperand = AddressOperand <$> address
+constantOperand = ConstantOperand <$> constant
+registerOperand = RegisterOperand <$> register
 
--- Parses a register name and a constant value (separated by a comma) into a pair.
-registerConstantPair :: CharParser () (Register, Constant)
-registerConstantPair = (,) <$> register <*> (char ',' *> spaces *> constant)
-
-loadInstruction   = string "LOAD" *> spaces *> (try (uncurry LoadRegisterInstruction <$> registerPair) <|> try (uncurry LoadConstantInstruction <$> registerConstantPair))
-andInstruction    = string "AND" *> spaces *> (try (uncurry AndRegisterInstruction <$> registerPair) <|> try (uncurry AndConstantInstruction <$> registerConstantPair))
-callInstruction   = string "CALL" *> spaces *> (CallInstruction <$> address)
-jumpInstruction   = string "JUMP" *> spaces *> (JumpInstruction <$> address)
+loadInstruction   = string "LOAD" *> spaces *> (LoadInstruction <$> (registerOperand <* char ',' <* spaces) <*> (try registerOperand <|> try constantOperand))
+andInstruction    = string "AND" *> spaces *> (AndInstruction <$> (registerOperand <* char ',' <* spaces) <*> (try registerOperand <|> try constantOperand))
+callInstruction   = string "CALL" *> spaces *> (CallInstruction <$> addressOperand)
+jumpInstruction   = string "JUMP" *> spaces *> (JumpInstruction <$> addressOperand)
 returnInstruction = ReturnInstruction <$ string "RETURN"
 
 instruction :: CharParser () Instruction

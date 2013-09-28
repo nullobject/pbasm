@@ -48,30 +48,30 @@ spec = do
   describe ".loadInstruction" $ do
     it "parses a 'LOAD sX, sY' instruction" $ do
       let result = fromRight $ parse loadInstruction "" "LOAD s0, s1"
-      result `shouldBe` LoadRegisterInstruction Register0 Register1
+      result `shouldBe` LoadInstruction (RegisterOperand Register0) (RegisterOperand Register1)
 
     it "parses a 'LOAD sX, kk' instruction" $ do
       let result = fromRight $ parse loadInstruction "" "LOAD s0, ff"
-      result `shouldBe` LoadConstantInstruction Register0 (Constant 255)
+      result `shouldBe` LoadInstruction (RegisterOperand Register0) (ConstantOperand (Constant 255))
 
   describe ".andInstruction" $ do
     it "parses a 'AND sX, sY' instruction" $ do
       let result = fromRight $ parse andInstruction "" "AND s0, s1"
-      result `shouldBe` AndRegisterInstruction Register0 Register1
+      result `shouldBe` AndInstruction (RegisterOperand Register0) (RegisterOperand Register1)
 
     it "parses a 'AND sX, kk' instruction" $ do
       let result = fromRight $ parse andInstruction "" "AND s0, ff"
-      result `shouldBe` AndConstantInstruction Register0 (Constant 255)
+      result `shouldBe` AndInstruction (RegisterOperand Register0) (ConstantOperand (Constant 255))
 
   describe ".callInstruction" $ do
     it "parses a 'CALL aaa' instruction" $ do
       let result = fromRight $ parse callInstruction "" "CALL fff"
-      result `shouldBe` CallInstruction (Address 4095)
+      result `shouldBe` CallInstruction (AddressOperand (Address 4095))
 
   describe ".jumpInstruction" $ do
     it "parses a 'JUMP aaa' instruction" $ do
       let result = fromRight $ parse jumpInstruction "" "JUMP fff"
-      result `shouldBe` JumpInstruction (Address 4095)
+      result `shouldBe` JumpInstruction (AddressOperand (Address 4095))
 
   describe ".returnInstruction" $ do
     it "parses a 'RETURN' instruction" $ do
