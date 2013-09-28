@@ -38,6 +38,16 @@ data Instruction =
     -- Performs a bit-wise logical AND operation on the first and second operands.
   | AndInstruction Operand Operand
 
+    -- OR sX, sY
+    -- OR sX, kk
+    -- Performs a bit-wise logical OR operation on the first and second operands.
+  | OrInstruction Operand Operand
+
+    -- XOR sX, sY
+    -- XOR sX, kk
+    -- Performs a bit-wise logical XOR operation on the first and second operands.
+  | XorInstruction Operand Operand
+
     -- JUMP aaa
     -- Jumps to an address.
   | JumpInstruction Operand
@@ -68,19 +78,42 @@ register :: CharParser () Register
 register = char 's' *> (decode <$> hexDigit)
   where decode x = toEnum $ readHex' [x]
 
+addressOperand :: CharParser () Operand
 addressOperand = AddressOperand <$> address
+
+constantOperand :: CharParser () Operand
 constantOperand = ConstantOperand <$> constant
+
+registerOperand :: CharParser () Operand
 registerOperand = RegisterOperand <$> register
 
-loadInstruction   = string "LOAD" *> spaces *> (LoadInstruction <$> (registerOperand <* char ',' <* spaces) <*> (try registerOperand <|> try constantOperand))
-andInstruction    = string "AND" *> spaces *> (AndInstruction <$> (registerOperand <* char ',' <* spaces) <*> (try registerOperand <|> try constantOperand))
-callInstruction   = string "CALL" *> spaces *> (CallInstruction <$> addressOperand)
-jumpInstruction   = string "JUMP" *> spaces *> (JumpInstruction <$> addressOperand)
+operand = choice [
+    try addressOperand
+  , try constantOperand
+  , try registerOperand
+  ]
+
+operands1 p = p <$> operand
+operands2 p = p <$> (operand <* spaces <* char ',' <* spaces) <*> operand
+
+loadInstruction   = string "LOAD" *> spaces *> (operands2 LoadInstruction)
+andInstruction    = string "AND"  *> spaces *> (operands2 AndInstruction)
+orInstruction     = string "OR"   *> spaces *> (operands2 OrInstruction)
+xorInstruction    = string "XOR"  *> spaces *> (operands2 XorInstruction)
+callInstruction   = string "CALL" *> spaces *> (operands1 CallInstruction)
+jumpInstruction   = string "JUMP" *> spaces *> (operands1 JumpInstruction)
 returnInstruction = ReturnInstruction <$ string "RETURN"
 
 instruction :: CharParser () Instruction
-instruction = loadInstruction
-          <|> andInstruction
-          <|> callInstruction
-          <|> jumpInstruction
-          <|> returnInstruction
+instruction = choice [
+    loadInstruction
+  , andInstruction
+  , orInstruction
+  , xorInstruction
+  , callInstruction
+  , jumpInstruction
+  , returnInstruction
+  ]
+
+instructions :: CharParser () [Instruction]
+instructions = sepEndBy instruction newline
