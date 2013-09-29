@@ -7,5 +7,9 @@ import Text.ParserCombinators.Parsec
 
 main :: IO ()
 main = do
-  parseTest instructions "LOAD s0, FF\n\
-                         \AND s0, 01"
+  input <- getContents
+  case runParser instructions () "" input of
+    Left e -> print e
+    Right instructions -> do
+      let opcodes = runAssembler instructions
+      print opcodes
