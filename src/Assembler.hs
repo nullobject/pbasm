@@ -33,6 +33,7 @@ assemble (OrInstruction (RegisterOperand x) (ConstantOperand y))   = bar 0x05 x 
 assemble (XorInstruction (RegisterOperand x) (RegisterOperand y))  = foo 0x06 x y
 assemble (XorInstruction (RegisterOperand x) (ConstantOperand y))  = bar 0x07 x y
 assemble (ShiftLeft0Instruction (RegisterOperand x))               = (0x14 `shiftL` 12) + (fromRegister x `shiftL` 8) + 0x06
+assemble (ShiftLeft1Instruction (RegisterOperand x))               = (0x14 `shiftL` 12) + (fromRegister x `shiftL` 8) + 0x07
 assemble (CallInstruction (AddressOperand x))                      = baz 0x20 x
 assemble _                                                         = 0x00000
 

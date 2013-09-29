@@ -57,6 +57,7 @@ spec = do
                   \XOR s0, s1\n\
                   \XOR s0, FF\n\
                   \SL0 s0\n\
+                  \SL1 s0\n\
                   \CALL FFF\n\
                   \JUMP FFF\n\
                   \RETURN\n"
@@ -73,6 +74,7 @@ spec = do
         , XorInstruction (RegisterOperand Register0) (RegisterOperand Register1)
         , XorInstruction (RegisterOperand Register0) (ConstantOperand (Constant 0xFF))
         , ShiftLeft0Instruction (RegisterOperand Register0)
+        , ShiftLeft1Instruction (RegisterOperand Register0)
         , CallInstruction (AddressOperand (Address 0xFFF))
         , JumpInstruction (AddressOperand (Address 0xFFF))
         , ReturnInstruction

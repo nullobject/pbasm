@@ -48,6 +48,10 @@ spec = do
       let result = assemble $ ShiftLeft0Instruction (RegisterOperand Register0)
       result `shouldBe` 0x14006
 
+    it "assembles a 'SL1 sX' instruction" $ do
+      let result = assemble $ ShiftLeft1Instruction (RegisterOperand Register0)
+      result `shouldBe` 0x14007
+
     it "assembles a 'CALL aaa' instruction" $ do
       let result = assemble $ CallInstruction (AddressOperand (Address 0xFFF))
       result `shouldBe` 0x20FFF
