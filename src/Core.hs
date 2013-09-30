@@ -24,7 +24,7 @@ data Operand =
   | RegisterOperand Register
   deriving (Eq, Show)
 
-data Directives =
+data Statement =
     -- Assigns a name to a constant value. For example:
     ConstantDirective Name Constant
 
@@ -44,44 +44,12 @@ data Directives =
     -- following the directive.
   | IncludeDirective FilePath
 
-data Instruction =
-    -- Loads a value into the first operand from the second operand.
-    -- LOAD sX, sY
-    -- LOAD sX, kk
-    LoadInstruction Operand Operand
+    -- An instruction of arity 0.
+  | NullaryInstruction String
 
-    -- Performs a bit-wise logical AND operation on the first and second operands.
-    -- AND sX, sY
-    -- AND sX, kk
-  | AndInstruction Operand Operand
+    -- An instruction of arity 1.
+  | UnaryInstruction String Operand
 
-    -- Performs a bit-wise logical OR operation on the first and second operands.
-    -- OR sX, sY
-    -- OR sX, kk
-  | OrInstruction Operand Operand
-
-    -- Performs a bit-wise logical XOR operation on the first and second operands.
-    -- XOR sX, sY
-    -- XOR sX, kk
-  | XorInstruction Operand Operand
-
-    -- Performs a shift left operation on the operand.
-    -- SL0 sX
-  | ShiftLeft0Instruction Operand
-
-    -- Performs a shift left operation on the operand.
-    -- SL1 sX
-  | ShiftLeft1Instruction Operand
-
-    -- Jumps to an address.
-    -- JUMP aaa
-  | JumpInstruction Operand
-
-    -- Calls a subroutine at an address.
-    -- CALL aaa
-  | CallInstruction Operand
-
-    -- Completes a subroutine.
-    -- RETURN
-  | ReturnInstruction
+    -- An instruction of arity 2.
+  | BinaryInstruction String Operand Operand
   deriving (Eq, Show)

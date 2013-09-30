@@ -19,23 +19,25 @@ fromConstant (Constant c) = fromIntegral c
 fromRegister :: Register -> Word32
 fromRegister = fromIntegral . fromEnum
 
-foo op x y = (op `shiftL` 12) + (fromRegister x `shiftL` 8) + (fromRegister y `shiftL` 4)
-bar op x y = (op `shiftL` 12) + (fromRegister x `shiftL` 8) + (fromConstant y)
-baz op x   = (op `shiftL` 12) + (fromAddress x)
+pack :: Word32 -> Operand -> Word32 -> Word32
+pack op (RegisterOperand x) y = (op `shiftL` 12) + (fromRegister x `shiftL` 8) + y
+pack op (AddressOperand  x) y = (op `shiftL` 12) + (fromAddress x)
 
-assemble :: Instruction -> Word32
-assemble (LoadInstruction (RegisterOperand x) (RegisterOperand y)) = foo 0x00 x y
-assemble (LoadInstruction (RegisterOperand x) (ConstantOperand y)) = bar 0x01 x y
-assemble (AndInstruction (RegisterOperand x) (RegisterOperand y))  = foo 0x02 x y
-assemble (AndInstruction (RegisterOperand x) (ConstantOperand y))  = bar 0x03 x y
-assemble (OrInstruction (RegisterOperand x) (RegisterOperand y))   = foo 0x04 x y
-assemble (OrInstruction (RegisterOperand x) (ConstantOperand y))   = bar 0x05 x y
-assemble (XorInstruction (RegisterOperand x) (RegisterOperand y))  = foo 0x06 x y
-assemble (XorInstruction (RegisterOperand x) (ConstantOperand y))  = bar 0x07 x y
-assemble (ShiftLeft0Instruction (RegisterOperand x))               = (0x14 `shiftL` 12) + (fromRegister x `shiftL` 8) + 0x06
-assemble (ShiftLeft1Instruction (RegisterOperand x))               = (0x14 `shiftL` 12) + (fromRegister x `shiftL` 8) + 0x07
-assemble (CallInstruction (AddressOperand x))                      = baz 0x20 x
-assemble _                                                         = 0x00000
+assemble :: Statement -> Word32
+assemble (BinaryInstruction "load" x (RegisterOperand y)) = pack 0x00 x (fromRegister y `shiftL` 4)
+assemble (BinaryInstruction "load" x (ConstantOperand y)) = pack 0x01 x (fromConstant y)
+assemble (BinaryInstruction "and"  x (RegisterOperand y)) = pack 0x02 x (fromRegister y `shiftL` 4)
+assemble (BinaryInstruction "and"  x (ConstantOperand y)) = pack 0x03 x (fromConstant y)
+assemble (BinaryInstruction "or"   x (RegisterOperand y)) = pack 0x04 x (fromRegister y `shiftL` 4)
+assemble (BinaryInstruction "or"   x (ConstantOperand y)) = pack 0x05 x (fromConstant y)
+assemble (BinaryInstruction "xor"  x (RegisterOperand y)) = pack 0x06 x (fromRegister y `shiftL` 4)
+assemble (BinaryInstruction "xor"  x (ConstantOperand y)) = pack 0x07 x (fromConstant y)
 
-runAssembler :: [Instruction] -> [Word32]
+assemble (UnaryInstruction "sl0"  x) = pack 0x14 x 0x06
+assemble (UnaryInstruction "sl1"  x) = pack 0x14 x 0x07
+assemble (UnaryInstruction "call" x) = pack 0x20 x 0x00
+
+assemble _ = 0x00000
+
+runAssembler :: [Statement] -> [Word32]
 runAssembler = map assemble
