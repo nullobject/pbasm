@@ -36,6 +36,10 @@ data Directives =
     -- instructions.
   | TableDirective Name [Constant]
 
+    -- Forces the assembler to assemble all subsequent instructions starting at
+    -- the address defined.
+  | AddressDirective Address
+
     -- Inserts the contents of another file into the program immediately
     -- following the directive.
   | IncludeDirective FilePath

@@ -2,13 +2,21 @@
 
 -- This module defines the parser which is used to parse the assembly source
 -- code into an AST.
-module Parser where
+module Parser (
+    address
+  , constant
+  , register
+  , instructions
+  , parsePsmFile
+  ) where
 
 import Core
 
 import Control.Applicative hiding (optional, (<|>))
 import Numeric (readHex)
 import Text.ParserCombinators.Parsec
+import Text.ParserCombinators.Parsec.Token
+import Text.ParserCombinators.Parsec.Language
 
 readHex' = fst . head . readHex
 
@@ -70,3 +78,24 @@ instruction = choice [
 
 instructions :: CharParser () [Instruction]
 instructions = sepEndBy instruction newline
+
+psmDef :: LanguageDef s
+psmDef = emptyDef {
+    caseSensitive   = False
+  , commentStart    = ""
+  , commentEnd      = ""
+  , commentLine     = ";"
+  , nestedComments  = False
+  , reservedNames   = directiveNames ++ instructionNames
+  , reservedOpNames = ["~"]
+  }
+  where
+    directiveNames   = ["constant", "string", "table", "address", "include"]
+    instructionNames = ["load", "and", "or", "xor", "sl0", "sl1", "call", "jump", "return"]
+
+psm :: TokenParser s
+psm = makeTokenParser psmDef
+
+parsePsmFile :: FilePath -> IO (Either ParseError [Instruction])
+parsePsmFile filePath = do
+  parseFromFile instructions filePath
