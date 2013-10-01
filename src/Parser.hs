@@ -54,10 +54,10 @@ nullaryInstruction :: String -> CharParser () Statement
 nullaryInstruction name = NullaryInstruction name <$ reserved name
 
 unaryInstruction :: String -> CharParser () Statement
-unaryInstruction   name = reserved name *> (UnaryInstruction name <$> operand)
+unaryInstruction name = reserved name *> (UnaryInstruction name <$> operand)
 
 binaryInstruction :: String -> CharParser () Statement
-binaryInstruction  name = reserved name *> (BinaryInstruction name <$> operand <*> (comma *> operand))
+binaryInstruction name = reserved name *> (BinaryInstruction name <$> operand <*> (comma *> operand))
 
 psmDef :: LanguageDef st
 psmDef = emptyDef {
