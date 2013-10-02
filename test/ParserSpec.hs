@@ -30,11 +30,15 @@ spec = do
 
     it "fails with less than 3 digits" $ do
       let result = show $ fromLeft $ parse address "" "ff"
-      result `shouldContain` "expecting hexadecimal digit"
+      result `shouldContain` "expecting address"
 
-    -- it "fails with more than 3 digits" $ do
-    --   let result = show $ fromLeft $ parse address "" "ffff"
-    --   result `shouldContain` "expecting hexadecimal digit"
+    it "fails with more than 3 digits" $ do
+      let result = show $ fromLeft $ parse address "" "ffff"
+      result `shouldContain` "expecting address"
+
+    it "fails with an invalid hexadecimal string" $ do
+      let result = show $ fromLeft $ parse address "" "zzz"
+      result `shouldContain` "expecting address"
 
   describe "constant" $ do
     it "parses a lowercase 2 digit hexadecimal string" $ do
@@ -45,13 +49,17 @@ spec = do
       let result = fromRight $ parse constant "" "AB"
       result `shouldBe` Constant 0xAB
 
+    it "fails with an invalid hexadecimal string" $ do
+      let result = show $ fromLeft $ parse constant "" "zz"
+      result `shouldContain` "expecting constant"
+
     it "fails with less than 2 digits" $ do
       let result = show $ fromLeft $ parse constant "" "f"
-      result `shouldContain` "expecting hexadecimal digit"
+      result `shouldContain` "expecting constant"
 
-    -- it "fails with more than 2 digits" $ do
-    --   let result = show $ fromLeft $ parse constant "" "fff"
-    --   result `shouldContain` "expecting hexadecimal digit"
+    it "fails with more than 2 digits" $ do
+      let result = show $ fromLeft $ parse constant "" "fff"
+      result `shouldContain` "expecting constant"
 
   describe "register" $ do
     it "parses a lowercase register name" $ do
@@ -62,6 +70,6 @@ spec = do
       let result = fromRight $ parse register "" "S0"
       result `shouldBe` Register0
 
-    it "returns an error otherwise" $ do
+    it "fails with an invalid register name" $ do
       let result = show $ fromLeft $ parse register "" "sz"
-      result `shouldContain` "expecting hexadecimal digit"
+      result `shouldContain` "expecting register"
