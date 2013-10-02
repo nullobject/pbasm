@@ -14,6 +14,7 @@ executable pbasm
   hs-source-dirs: src
   main-is:        Main.hs
   build-depends:  base ==4.6.*
+                , containers
                 , parsec
 
 test-suite spec
@@ -22,5 +23,6 @@ test-suite spec
   hs-source-dirs: src, test
   main-is:        Spec.hs
   build-depends:  base ==4.6.*
+                , containers
                 , parsec
                 , hspec

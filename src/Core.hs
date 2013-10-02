@@ -1,5 +1,6 @@
 module Core where
 
+import Data.Map
 import Data.Word
 
 type Label = String
@@ -54,3 +55,14 @@ data Statement =
     -- An instruction of arity 2.
   | BinaryInstruction String Operand Operand
   deriving (Eq, Show)
+
+-- A map from lables to addresses.
+type LabelMap = Map Label Address
+
+data ParserState = ParserState {
+    -- The current program address.
+    parserStateAddress :: Address
+
+    -- A map from labels to addresses.
+  , parserStateLabelMap :: LabelMap
+  } deriving (Show)
