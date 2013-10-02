@@ -6,6 +6,8 @@ module Parser (
     address
   , constant
   , register
+  , label
+  , statement
   , parsePsmFile
   ) where
 
@@ -13,7 +15,7 @@ import Core
 
 import Control.Applicative hiding (many, optional, (<|>))
 import Numeric (readHex)
-import Text.ParserCombinators.Parsec
+import Text.ParserCombinators.Parsec hiding (label)
 import Text.ParserCombinators.Parsec.Token (TokenParser)
 import qualified Text.ParserCombinators.Parsec.Token as Token
 import Text.ParserCombinators.Parsec.Language
@@ -38,8 +40,10 @@ psmDef = emptyDef {
 psm :: TokenParser st
 psm = Token.makeTokenParser psmDef
 
+colon      = Token.colon psm
 comma      = Token.comma psm
 lexeme     = Token.lexeme psm
+identifier = Token.identifier psm
 reserved   = Token.reserved psm
 whiteSpace = Token.whiteSpace psm
 
@@ -77,9 +81,13 @@ unaryInstruction name = reserved name *> (UnaryInstruction name <$> operand)
 binaryInstruction :: String -> CharParser () Statement
 binaryInstruction name = reserved name *> (BinaryInstruction name <$> operand <*> (comma *> operand))
 
+label :: CharParser () Label
+label = identifier <* colon
+
 statement :: CharParser () Statement
-statement = choice $ nullaryInstructions ++ unaryInstructions ++ binaryInstructions
+statement = optional label *> instruction
   where
+    instruction         = choice $ nullaryInstructions ++ unaryInstructions ++ binaryInstructions
     nullaryInstructions = map nullaryInstruction nullaryInstructionNames
     unaryInstructions   = map unaryInstruction unaryInstructionNames
     binaryInstructions  = map binaryInstruction binaryInstructionNames

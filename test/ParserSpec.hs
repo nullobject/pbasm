@@ -4,15 +4,15 @@ import Core
 import Parser
 
 import Test.Hspec
-import Text.ParserCombinators.Parsec
+import Text.ParserCombinators.Parsec hiding (label)
 
-fromRight :: Either a b -> b
-fromRight (Right b) = b
-fromRight _ = error "no right value"
+fromRight :: (Show a) => Either a b -> b
+fromRight (Right x) = x
+fromRight (Left err) = error $ "no right value" ++ show err
 
-fromLeft :: Either a b -> a
-fromLeft (Left a) = a
-fromLeft _ = error "no left value"
+fromLeft :: (Show b) => Either a b -> a
+fromLeft (Left x) = x
+fromLeft (Right err) = error $ "no left value" ++ show err
 
 main :: IO ()
 main = hspec spec
@@ -73,3 +73,13 @@ spec = do
     it "fails with an invalid register name" $ do
       let result = show $ fromLeft $ parse register "" "sz"
       result `shouldContain` "expecting register"
+
+  describe "label" $ do
+    it "parses a label" $ do
+      let result = fromRight $ parse label "" "lol:"
+      result `shouldBe` "lol"
+
+  describe "statement" $ do
+    it "parses statement" $ do
+      let result = fromRight $ parse statement "" "lol: LOAD s0, s1"
+      result `shouldBe` (BinaryInstruction "load" (RegisterOperand Register0) (RegisterOperand Register1))

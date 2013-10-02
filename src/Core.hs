@@ -2,7 +2,8 @@ module Core where
 
 import Data.Word
 
-type Name = String
+type Label = String
+type Name  = String
 
 -- A 12-bit program address.
 newtype Address = Address Word16 deriving (Eq, Show)
