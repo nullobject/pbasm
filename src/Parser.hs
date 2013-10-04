@@ -62,13 +62,13 @@ psm = Token.makeTokenParser psmDef
 colon      = Token.colon psm
 comma      = Token.comma psm
 lexeme     = Token.lexeme psm
-identifier = Token.identifier psm
+label      = Token.identifier psm
 reserved   = Token.reserved psm
 whiteSpace = Token.whiteSpace psm
 
 -- Parses exactly n hexadecimal digits.
 hexDigits :: (Enum a) => Int -> CharParser ParserState a
-hexDigits n = decode <$> count n hexDigit <* notFollowedBy hexDigit
+hexDigits n = decode <$> count n hexDigit <* notFollowedBy (identLetter psmDef)
   where decode x = toEnum . fst . head . readHex $ x
 
 -- Parses a 12-bit address.
@@ -85,10 +85,11 @@ register = (lexeme $ try $ oneOf "sS" *> hexDigits 1) <?> "register"
 
 -- Parses an operand.
 operand :: CharParser ParserState Operand
-operand = addressOperand <|> constantOperand <|> registerOperand <?> "operand"
+operand = addressOperand <|> constantOperand <|> registerOperand <|> labelOperand <?> "operand"
   where
     addressOperand  = AddressOperand  <$> address
     constantOperand = ConstantOperand <$> constant
+    labelOperand    = LabelOperand    <$> label
     registerOperand = RegisterOperand <$> register
 
 -- Parses an instruction of arity 0.
@@ -103,25 +104,19 @@ unaryInstruction name = reserved name *> (UnaryInstruction name <$> operand)
 binaryInstruction :: String -> CharParser ParserState Statement
 binaryInstruction name = reserved name *> (BinaryInstruction name <$> operand <*> (comma *> operand))
 
--- Parses a label.
-label :: CharParser ParserState Label
-label = do
-  l <- identifier <* colon
-  updateState . addLabel $ l
-  return l
-
 -- Parses a statement and increments the program address.
 statement :: CharParser ParserState Statement
 statement = do
-  optional label
+  l <- optionMaybe (label <* colon)
+  updateState $ maybe id addLabel l
   i <- instruction
   updateState incrementAddress
   return i
   where
-    instruction         = choice $ nullaryInstructions ++ unaryInstructions ++ binaryInstructions
     nullaryInstructions = map nullaryInstruction nullaryInstructionNames
     unaryInstructions   = map unaryInstruction unaryInstructionNames
     binaryInstructions  = map binaryInstruction binaryInstructionNames
+    instruction         = choice $ nullaryInstructions ++ unaryInstructions ++ binaryInstructions
 
 -- Parses multiple statements and returns a label map.
 statements :: CharParser ParserState ([Statement], LabelMap)
