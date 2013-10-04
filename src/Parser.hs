@@ -8,17 +8,36 @@ module Parser (
   , register
   , label
   , statement
+  , statements
   , parsePsmFile
+  , parserState
   ) where
 
 import Core
 
 import Control.Applicative hiding (many, optional, (<|>))
+import qualified Data.Map as Map
 import Numeric (readHex)
 import Text.ParserCombinators.Parsec hiding (label)
+import Text.ParserCombinators.Parsec.Language
 import Text.ParserCombinators.Parsec.Token (TokenParser)
 import qualified Text.ParserCombinators.Parsec.Token as Token
-import Text.ParserCombinators.Parsec.Language
+
+parserState = ParserState {
+    parserStateAddress  = Address 0
+  , parserStateLabelMap = Map.empty
+  }
+
+addLabel :: Label -> ParserState -> ParserState
+addLabel l state = state { parserStateLabelMap = labelMap' }
+  where
+    a = parserStateAddress state
+    labelMap  = parserStateLabelMap state
+    labelMap' = Map.insert l a labelMap
+
+incrementAddress :: ParserState -> ParserState
+incrementAddress state = state { parserStateAddress = Address (a + 1) }
+  where Address a = parserStateAddress state
 
 directiveNames          = ["constant", "string", "table", "address", "include"]
 nullaryInstructionNames = ["return"]
@@ -48,52 +67,67 @@ reserved   = Token.reserved psm
 whiteSpace = Token.whiteSpace psm
 
 -- Parses exactly n hexadecimal digits.
-hexDigits :: (Enum a) => Int -> CharParser () a
+hexDigits :: (Enum a) => Int -> CharParser ParserState a
 hexDigits n = decode <$> count n hexDigit <* notFollowedBy hexDigit
   where decode x = toEnum . fst . head . readHex $ x
 
 -- Parses a 12-bit address.
-address :: CharParser () Address
+address :: CharParser ParserState Address
 address = (lexeme $ try $ Address <$> hexDigits 3) <?> "address"
 
 -- Parses a 8-bit constant value.
-constant :: CharParser () Constant
+constant :: CharParser ParserState Constant
 constant = (lexeme $ try $ Constant <$> hexDigits 2) <?> "constant"
 
 -- Parses a register name.
-register :: CharParser () Register
+register :: CharParser ParserState Register
 register = (lexeme $ try $ oneOf "sS" *> hexDigits 1) <?> "register"
 
 -- Parses an operand.
-operand :: CharParser () Operand
+operand :: CharParser ParserState Operand
 operand = addressOperand <|> constantOperand <|> registerOperand <?> "operand"
   where
     addressOperand  = AddressOperand  <$> address
     constantOperand = ConstantOperand <$> constant
     registerOperand = RegisterOperand <$> register
 
-nullaryInstruction :: String -> CharParser () Statement
+-- Parses an instruction of arity 0.
+nullaryInstruction :: String -> CharParser ParserState Statement
 nullaryInstruction name = NullaryInstruction name <$ reserved name
 
-unaryInstruction :: String -> CharParser () Statement
+-- Parses an instruction of arity 1.
+unaryInstruction :: String -> CharParser ParserState Statement
 unaryInstruction name = reserved name *> (UnaryInstruction name <$> operand)
 
-binaryInstruction :: String -> CharParser () Statement
+-- Parses an instruction of arity 2.
+binaryInstruction :: String -> CharParser ParserState Statement
 binaryInstruction name = reserved name *> (BinaryInstruction name <$> operand <*> (comma *> operand))
 
-label :: CharParser () Label
-label = identifier <* colon
+-- Parses a label.
+label :: CharParser ParserState Label
+label = do
+  l <- identifier <* colon
+  updateState . addLabel $ l
+  return l
 
-statement :: CharParser () Statement
-statement = optional label *> instruction
+-- Parses a statement and increments the program address.
+statement :: CharParser ParserState Statement
+statement = do
+  optional label
+  i <- instruction
+  updateState incrementAddress
+  return i
   where
     instruction         = choice $ nullaryInstructions ++ unaryInstructions ++ binaryInstructions
     nullaryInstructions = map nullaryInstruction nullaryInstructionNames
     unaryInstructions   = map unaryInstruction unaryInstructionNames
     binaryInstructions  = map binaryInstruction binaryInstructionNames
 
-statements :: CharParser () [Statement]
-statements = whiteSpace *> many statement <* eof
+-- Parses multiple statements and returns a label map.
+statements :: CharParser ParserState ([Statement], LabelMap)
+statements = whiteSpace *> ((,) <$> many statement <*> labelMap) <* eof
+  where labelMap = parserStateLabelMap <$> getState
 
-parsePsmFile :: FilePath -> IO (Either ParseError [Statement])
-parsePsmFile filePath = parseFromFile statements filePath
+-- Parses a file, returning the statements and a label map.
+parsePsmFile :: FilePath -> IO (Either ParseError ([Statement], LabelMap))
+parsePsmFile filePath = runParser statements parserState filePath <$> readFile filePath
