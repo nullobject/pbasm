@@ -9,8 +9,26 @@ type Name  = String
 -- A 12-bit program address.
 newtype Address = Address Word16 deriving (Eq, Show)
 
+instance Num Address where
+  (Address x) + (Address y) = Address (x + y)
+  (Address x) - (Address y) = Address (x - y)
+  (Address x) * (Address y) = Address (x * y)
+  abs x                     = x
+  signum 0                  = 0
+  signum _                  = 1
+  fromInteger i             = Address (fromInteger i)
+
 -- An 8-bit constant value.
 newtype Constant = Constant Word8 deriving (Eq, Show)
+
+instance Num Constant where
+  (Constant x) + (Constant y) = Constant (x + y)
+  (Constant x) - (Constant y) = Constant (x - y)
+  (Constant x) * (Constant y) = Constant (x * y)
+  abs x                       = x
+  signum 0                    = 0
+  signum _                    = 1
+  fromInteger i               = Constant (fromInteger i)
 
 -- The PicoBlaze has 16 general purpose 8-bit registers.
 data Register =

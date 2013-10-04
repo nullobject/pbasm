@@ -24,7 +24,7 @@ import Text.ParserCombinators.Parsec.Token (TokenParser)
 import qualified Text.ParserCombinators.Parsec.Token as Token
 
 parserState = ParserState {
-    parserStateAddress  = Address 0
+    parserStateAddress  = 0
   , parserStateLabelMap = Map.empty
   }
 
@@ -36,8 +36,10 @@ addLabel l state = state { parserStateLabelMap = labelMap' }
     labelMap' = Map.insert l a labelMap
 
 incrementAddress :: ParserState -> ParserState
-incrementAddress state = state { parserStateAddress = Address (a + 1) }
-  where Address a = parserStateAddress state
+incrementAddress state = state { parserStateAddress = a' }
+  where
+    a  = parserStateAddress state
+    a' = a + 1
 
 directiveNames          = ["constant", "string", "table", "address", "include"]
 nullaryInstructionNames = ["return"]

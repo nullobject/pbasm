@@ -21,9 +21,9 @@ fromRegister :: Register -> Word32
 fromRegister = fromIntegral . fromEnum
 
 pack :: Word32 -> Operand -> Word32 -> LabelMap -> Word32
-pack op (RegisterOperand x) y _ = (op `shiftL` 12) + (fromRegister x `shiftL` 8) + y
-pack op (AddressOperand x) y _ = (op `shiftL` 12) + (fromAddress x)
-pack op (LabelOperand x) y labelMap = (op `shiftL` 12) + (fromAddress $ labelMap ! x)
+pack op (RegisterOperand x) y _     = (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. y
+pack op (AddressOperand x) y _      = (op `shiftL` 12) .|. (fromAddress x)
+pack op (LabelOperand x) y labelMap = (op `shiftL` 12) .|. (fromAddress $ labelMap ! x)
 
 assemble :: Statement -> LabelMap -> Word32
 assemble (BinaryInstruction "load" x (RegisterOperand y)) labelMap = pack 0x00 x (fromRegister y `shiftL` 4) labelMap

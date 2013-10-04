@@ -25,11 +25,11 @@ spec = do
   describe "address" $ do
     it "parses a lowercase 3 digit hexadecimal string" $ do
       let result = fromRight $ parse address "abc"
-      result `shouldBe` Address 0xABC
+      result `shouldBe` 0xABC
 
     it "parses an uppercase 3 digit hexadecimal string" $ do
       let result = fromRight $ parse address "ABC"
-      result `shouldBe` Address 0xABC
+      result `shouldBe` 0xABC
 
     it "fails with less than 3 digits" $ do
       let result = show $ fromLeft $ parse address "ff"
@@ -46,11 +46,11 @@ spec = do
   describe "constant" $ do
     it "parses a lowercase 2 digit hexadecimal string" $ do
       let result = fromRight $ parse constant "ab"
-      result `shouldBe` Constant 0xAB
+      result `shouldBe` 0xAB
 
     it "parses an uppercase 2 digit hexadecimal string" $ do
       let result = fromRight $ parse constant "AB"
-      result `shouldBe` Constant 0xAB
+      result `shouldBe` 0xAB
 
     it "fails with an invalid hexadecimal string" $ do
       let result = show $ fromLeft $ parse constant "zz"
@@ -93,5 +93,5 @@ spec = do
       let instructions = [ (BinaryInstruction "load" (RegisterOperand Register0) (RegisterOperand Register1))
                          , (UnaryInstruction "call" (LabelOperand "bar"))
                          , (NullaryInstruction "return") ]
-      let map = fromList [("foo", Address 1), ("bar", Address 2)]
+      let map = fromList [("foo", 1), ("bar", 2)]
       result `shouldBe` (instructions, map)
