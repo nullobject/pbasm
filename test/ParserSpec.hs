@@ -89,8 +89,9 @@ spec = do
 
   describe "statements" $ do
     it "parses statements" $ do
-      let result = fromRight $ parse statements "foo: LOAD s0, s1\nbar: RETURN"
+      let result = fromRight $ parse statements "LOAD s0, s1\nfoo: CALL bar\nbar: RETURN"
       let instructions = [ (BinaryInstruction "load" (RegisterOperand Register0) (RegisterOperand Register1))
+                         , (UnaryInstruction "call" (LabelOperand "bar"))
                          , (NullaryInstruction "return") ]
-      let map = fromList [("foo", Address 0), ("bar", Address 1)]
+      let map = fromList [("foo", Address 1), ("bar", Address 2)]
       result `shouldBe` (instructions, map)

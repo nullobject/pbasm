@@ -23,6 +23,7 @@ data Register =
 data Operand =
     AddressOperand  Address
   | ConstantOperand Constant
+  | LabelOperand    Label
   | RegisterOperand Register
   deriving (Eq, Show)
 

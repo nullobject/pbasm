@@ -12,6 +12,6 @@ main = do
   case result of
     Left e -> print e
     Right (statements, labelMap) -> do
-      let opcodes = runAssembler statements
+      let opcodes = runAssembler statements labelMap
       print labelMap
       print opcodes
