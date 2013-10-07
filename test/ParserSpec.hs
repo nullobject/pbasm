@@ -22,47 +22,47 @@ main = hspec spec
 
 spec :: Spec
 spec = do
-  describe "address" $ do
+  describe "addressValue" $ do
     it "parses a lowercase 3 digit hexadecimal string" $ do
-      let result = fromRight $ parse address "abc"
+      let result = fromRight $ parse addressValue "abc"
       result `shouldBe` 0xABC
 
     it "parses an uppercase 3 digit hexadecimal string" $ do
-      let result = fromRight $ parse address "ABC"
+      let result = fromRight $ parse addressValue "ABC"
       result `shouldBe` 0xABC
 
     it "fails with less than 3 digits" $ do
-      let result = show $ fromLeft $ parse address "ff"
-      result `shouldContain` "expecting address"
+      let result = show $ fromLeft $ parse addressValue "ff"
+      result `shouldContain` "expecting address value"
 
     it "fails with more than 3 digits" $ do
-      let result = show $ fromLeft $ parse address "ffff"
-      result `shouldContain` "expecting address"
+      let result = show $ fromLeft $ parse addressValue "ffff"
+      result `shouldContain` "expecting address value"
 
     it "fails with an invalid hexadecimal string" $ do
-      let result = show $ fromLeft $ parse address "zzz"
-      result `shouldContain` "expecting address"
+      let result = show $ fromLeft $ parse addressValue "zzz"
+      result `shouldContain` "expecting address value"
 
-  describe "constant" $ do
+  describe "dataValue" $ do
     it "parses a lowercase 2 digit hexadecimal string" $ do
-      let result = fromRight $ parse constant "ab"
+      let result = fromRight $ parse dataValue "ab"
       result `shouldBe` 0xAB
 
     it "parses an uppercase 2 digit hexadecimal string" $ do
-      let result = fromRight $ parse constant "AB"
+      let result = fromRight $ parse dataValue "AB"
       result `shouldBe` 0xAB
 
     it "fails with an invalid hexadecimal string" $ do
-      let result = show $ fromLeft $ parse constant "zz"
-      result `shouldContain` "expecting constant"
+      let result = show $ fromLeft $ parse dataValue "zz"
+      result `shouldContain` "expecting data value"
 
     it "fails with less than 2 digits" $ do
-      let result = show $ fromLeft $ parse constant "f"
-      result `shouldContain` "expecting constant"
+      let result = show $ fromLeft $ parse dataValue "f"
+      result `shouldContain` "expecting data value"
 
     it "fails with more than 2 digits" $ do
-      let result = show $ fromLeft $ parse constant "fff"
-      result `shouldContain` "expecting constant"
+      let result = show $ fromLeft $ parse dataValue "fff"
+      result `shouldContain` "expecting data value"
 
   describe "register" $ do
     it "parses a lowercase register name" $ do

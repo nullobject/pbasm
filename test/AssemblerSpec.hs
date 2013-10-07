@@ -13,14 +13,14 @@ main = hspec spec
 spec :: Spec
 spec = do
   describe "runAssembler" $ do
-    let labelMap = fromList [("foo", Address 1), ("bar", Address 2)]
+    let labelMap = fromList [("foo", AddressValue 1), ("bar", AddressValue 2)]
 
     it "assembles a 'LOAD sX, sY' instruction" $ do
       let result = runAssembler [(BinaryInstruction "load" (RegisterOperand Register0) (RegisterOperand Register1))] labelMap
       result `shouldBe` [0x00010]
 
     it "assembles a 'LOAD sX, kk' instruction" $ do
-      let result = runAssembler [(BinaryInstruction "load" (RegisterOperand Register0) (ConstantOperand 0xFF))] labelMap
+      let result = runAssembler [(BinaryInstruction "load" (RegisterOperand Register0) (DataOperand 0xFF))] labelMap
       result `shouldBe` [0x010FF]
 
     it "assembles a 'AND sX, sY' instruction" $ do
@@ -28,7 +28,7 @@ spec = do
       result `shouldBe` [0x02010]
 
     it "assembles a 'AND sX, kk' instruction" $ do
-      let result = runAssembler [(BinaryInstruction "and" (RegisterOperand Register0) (ConstantOperand 0xFF))] labelMap
+      let result = runAssembler [(BinaryInstruction "and" (RegisterOperand Register0) (DataOperand 0xFF))] labelMap
       result `shouldBe` [0x030FF]
 
     it "assembles a 'OR sX, sY' instruction" $ do
@@ -36,7 +36,7 @@ spec = do
       result `shouldBe` [0x04010]
 
     it "assembles a 'OR sX, kk' instruction" $ do
-      let result = runAssembler [(BinaryInstruction "or" (RegisterOperand Register0) (ConstantOperand 0xFF))] labelMap
+      let result = runAssembler [(BinaryInstruction "or" (RegisterOperand Register0) (DataOperand 0xFF))] labelMap
       result `shouldBe` [0x050FF]
 
     it "assembles a 'XOR sX, sY' instruction" $ do
@@ -44,7 +44,7 @@ spec = do
       result `shouldBe` [0x06010]
 
     it "assembles a 'XOR sX, kk' instruction" $ do
-      let result = runAssembler [(BinaryInstruction "xor" (RegisterOperand Register0) (ConstantOperand 0xFF))] labelMap
+      let result = runAssembler [(BinaryInstruction "xor" (RegisterOperand Register0) (DataOperand 0xFF))] labelMap
       result `shouldBe` [0x070FF]
 
     it "assembles a 'SL0 sX' instruction" $ do

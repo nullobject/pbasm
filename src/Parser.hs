@@ -3,8 +3,8 @@
 -- This module defines the parser which is used to parse the assembly source
 -- code into an AST.
 module Parser (
-    address
-  , constant
+    addressValue
+  , dataValue
   , register
   , label
   , statement
@@ -25,7 +25,7 @@ import qualified Text.ParserCombinators.Parsec.Token as Token
 
 data ParserState = ParserState {
     -- The current program address.
-    parserStateAddress :: Address
+    parserStateAddress :: AddressValue
 
     -- A map from labels to addresses.
   , parserStateLabelMap :: LabelMap
@@ -83,13 +83,13 @@ hexDigits :: (Enum a) => Int -> CharParser ParserState a
 hexDigits n = decode <$> count n hexDigit <* notFollowedBy (identLetter psmDef)
   where decode x = toEnum . fst . head . readHex $ x
 
--- Parses a 12-bit address.
-address :: CharParser ParserState Address
-address = (lexeme $ try $ Address <$> hexDigits 3) <?> "address"
+-- Parses a 12-bit address value.
+addressValue :: CharParser ParserState AddressValue
+addressValue = (lexeme $ try $ AddressValue <$> hexDigits 3) <?> "address value"
 
--- Parses a 8-bit constant value.
-constant :: CharParser ParserState Constant
-constant = (lexeme $ try $ Constant <$> hexDigits 2) <?> "constant"
+-- Parses a 8-bit data value.
+dataValue :: CharParser ParserState DataValue
+dataValue = (lexeme $ try $ DataValue <$> hexDigits 2) <?> "data value"
 
 -- Parses a register name.
 register :: CharParser ParserState Register
@@ -97,10 +97,10 @@ register = (lexeme $ try $ oneOf "sS" *> hexDigits 1) <?> "register"
 
 -- Parses an operand.
 operand :: CharParser ParserState Operand
-operand = addressOperand <|> constantOperand <|> registerOperand <|> labelOperand <?> "operand"
+operand = addressOperand <|> dataOperand <|> registerOperand <|> labelOperand <?> "operand"
   where
-    addressOperand  = AddressOperand  <$> address
-    constantOperand = ConstantOperand <$> constant
+    addressOperand  = AddressOperand  <$> addressValue
+    dataOperand     = DataOperand     <$> dataValue
     labelOperand    = LabelOperand    <$> label
     registerOperand = RegisterOperand <$> register
 
