@@ -57,6 +57,6 @@ assemble (UnaryInstruction "call" x) = pack 0x20 x (ConstantOperand 0x00)
 
 assemble _ = return 0x00000
 
-runAssembler :: [Statement] -> LabelMap -> [Word32]
-runAssembler statements labelMap = map (\statement -> assemble' statement labelMap) statements
+runAssembler :: ParserResult -> [Word32]
+runAssembler (statements, labelMap) = map (\statement -> assemble' statement labelMap) statements
   where assemble' statement labelMap = runReader (assemble statement) labelMap
