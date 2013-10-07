@@ -23,6 +23,16 @@ import Text.ParserCombinators.Parsec.Language
 import Text.ParserCombinators.Parsec.Token (TokenParser)
 import qualified Text.ParserCombinators.Parsec.Token as Token
 
+data ParserState = ParserState {
+    -- The current program address.
+    parserStateAddress :: Address
+
+    -- A map from labels to addresses.
+  , parserStateLabelMap :: LabelMap
+  } deriving (Show)
+
+type ParserResult = ([Statement], LabelMap)
+
 parserState = ParserState {
     parserStateAddress  = 0
   , parserStateLabelMap = Map.empty

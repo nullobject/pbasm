@@ -77,13 +77,3 @@ data Statement =
 
 -- A map from lables to addresses.
 type LabelMap = Map Label Address
-
-data ParserState = ParserState {
-    -- The current program address.
-    parserStateAddress :: Address
-
-    -- A map from labels to addresses.
-  , parserStateLabelMap :: LabelMap
-  } deriving (Show)
-
-type ParserResult = ([Statement], LabelMap)
