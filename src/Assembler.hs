@@ -31,17 +31,17 @@ fromRegister = fromIntegral . fromEnum
 -- Packs the given instruction into binary format.
 pack :: Word32 -> Operand -> Operand -> AssemblerReader (Maybe Word32)
 
-pack op (RegisterOperand x) (RegisterOperand y) = do
+pack op (RegisterOperand x) (RegisterOperand y) =
   return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromRegister y `shiftL` 4)
 
-pack op (RegisterOperand x) (DataOperand y) = do
+pack op (RegisterOperand x) (DataOperand y) =
   return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromData y)
 
 pack op (RegisterOperand x) (IdentifierOperand y) = do
   constantMap <- asks assemblerStateConstantMap
   return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromData $ constantMap ! y)
 
-pack op (AddressOperand x) _ = do
+pack op (AddressOperand x) _ =
   return $ Just $ (op `shiftL` 12) .|. (fromAddress x)
 
 pack op (IdentifierOperand x) _ = do
