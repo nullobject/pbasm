@@ -79,3 +79,7 @@ spec = do
     it "assembles a 'CALL label' instruction" $ do
       let result = runAssembler [(UnaryInstruction "call" (IdentifierOperand "foo"))] constantMap labelMap
       result `shouldBe` [0x20001]
+
+    it "assembles a 'RETURN' instruction" $ do
+      let result = runAssembler [(NullaryInstruction "return")] constantMap labelMap
+      result `shouldBe` [0x25000]

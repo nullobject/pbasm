@@ -14,3 +14,5 @@ main = do
     Right (statements, constantMap, labelMap) -> do
       let opcodes = runAssembler statements constantMap labelMap
       print opcodes
+      print constantMap
+      print labelMap

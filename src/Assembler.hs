@@ -9,6 +9,7 @@ import Core
 import Control.Monad.Reader
 import Data.Bits
 import Data.Map ((!))
+import Data.Maybe
 import Data.Word
 
 data AssemblerState = AssemblerState {
@@ -28,27 +29,29 @@ fromRegister :: Register -> Word32
 fromRegister = fromIntegral . fromEnum
 
 -- Packs the given instruction into binary format.
-pack :: Word32 -> Operand -> Operand -> AssemblerReader Word32
+pack :: Word32 -> Operand -> Operand -> AssemblerReader (Maybe Word32)
 
 pack op (RegisterOperand x) (RegisterOperand y) = do
-  return $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromRegister y `shiftL` 4)
+  return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromRegister y `shiftL` 4)
 
 pack op (RegisterOperand x) (DataOperand y) = do
-  return $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromData y)
+  return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromData y)
 
 pack op (RegisterOperand x) (IdentifierOperand y) = do
   constantMap <- asks assemblerStateConstantMap
-  return $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromData $ constantMap ! y)
+  return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromData $ constantMap ! y)
 
 pack op (AddressOperand x) _ = do
-  return $ (op `shiftL` 12) .|. (fromAddress x)
+  return $ Just $ (op `shiftL` 12) .|. (fromAddress x)
 
 pack op (IdentifierOperand x) _ = do
   labelMap <- asks assemblerStateLabelMap
-  return $ (op `shiftL` 12) .|. (fromAddress $ labelMap ! x)
+  return $ Just $ (op `shiftL` 12) .|. (fromAddress $ labelMap ! x)
+
+pack op _ _ = return $ Just $ op `shiftL` 12
 
 -- Assembles the given statement.
-assemble :: Statement -> AssemblerReader Word32
+assemble :: Statement -> AssemblerReader (Maybe Word32)
 
 assemble (BinaryInstruction "load" x y@(RegisterOperand _)) = pack 0x00 x y
 assemble (BinaryInstruction "load" x y                    ) = pack 0x01 x y
@@ -63,10 +66,12 @@ assemble (UnaryInstruction "sl0"  x) = pack 0x14 x (DataOperand 0x06)
 assemble (UnaryInstruction "sl1"  x) = pack 0x14 x (DataOperand 0x07)
 assemble (UnaryInstruction "call" x) = pack 0x20 x (DataOperand 0x00)
 
-assemble _ = return 0x00000
+assemble (NullaryInstruction "return") = pack 0x25 (DataOperand 0x00) (DataOperand 0x00)
+
+assemble _ = return Nothing
 
 -- Assembles the given statements into binary format.
 runAssembler :: [Statement] -> ConstantMap -> LabelMap -> [Word32]
-runAssembler statements constantMap labelMap = runReader (mapM assemble statements) assemblerState
+runAssembler statements constantMap labelMap = catMaybes $ runReader (mapM assemble statements) assemblerState
   where assemblerState = AssemblerState { assemblerStateConstantMap = constantMap
                                         , assemblerStateLabelMap    = labelMap }
