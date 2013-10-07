@@ -3,9 +3,7 @@ module Core where
 import Data.Map
 import Data.Word
 
-type Constant = String
-type Label    = String
-type Name     = String
+type Identifier = String
 
 -- A 12-bit address value.
 newtype AddressValue = AddressValue Word16 deriving (Eq, Show)
@@ -42,21 +40,21 @@ data Register =
 data Operand =
     AddressOperand  AddressValue
   | DataOperand     DataValue
-  | LabelOperand    Label
+  | LabelOperand    Identifier
   | RegisterOperand Register
   deriving (Eq, Show)
 
 data Statement =
     -- Assigns a name to a constant value.
-    ConstantDirective Constant DataValue
+    ConstantDirective Identifier DataValue
 
     -- Defines a list of characters for use with OUTPUTK and LOAD&RETURN
     -- instructions.
-  | StringDirective Name String
+  | StringDirective Identifier String
 
     -- Defines a list of values for use with OUTPUTK and LOAD&RETURN
     -- instructions.
-  | TableDirective Name [DataValue]
+  | TableDirective Identifier [DataValue]
 
     -- Forces the assembler to assemble all subsequent instructions starting at
     -- the address defined.
@@ -77,7 +75,7 @@ data Statement =
   deriving (Eq, Show)
 
 -- A map from constants to data values.
-type ConstantMap = Map Constant DataValue
+type ConstantMap = Map Identifier DataValue
 
 -- A map from labels to address values.
-type LabelMap = Map Label AddressValue
+type LabelMap = Map Identifier AddressValue

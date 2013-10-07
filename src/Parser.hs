@@ -42,7 +42,7 @@ addConstant (ConstantDirective c d) state = state { parserStateConstantMap = con
     constantMap  = parserStateConstantMap state
     constantMap' = Map.insert c d constantMap
 
-addLabel :: Label -> ParserState -> ParserState
+addLabel :: Identifier -> ParserState -> ParserState
 addLabel l state = state { parserStateLabelMap = labelMap' }
   where
     a = parserStateAddress state
@@ -77,8 +77,7 @@ psm = Token.makeTokenParser psmDef
 
 colon      = Token.colon psm
 comma      = Token.comma psm
-constant   = Token.identifier psm
-label      = Token.identifier psm
+identifier = Token.identifier psm
 lexeme     = Token.lexeme psm
 reserved   = Token.reserved psm
 whiteSpace = Token.whiteSpace psm
@@ -106,7 +105,7 @@ operand = addressOperand <|> dataOperand <|> registerOperand <|> labelOperand <?
   where
     addressOperand  = AddressOperand  <$> addressValue
     dataOperand     = DataOperand     <$> dataValue
-    labelOperand    = LabelOperand    <$> label
+    labelOperand    = LabelOperand    <$> identifier
     registerOperand = RegisterOperand <$> register
 
 -- Parses an instruction of arity 0.
@@ -124,7 +123,7 @@ binaryInstruction name = reserved name *> (BinaryInstruction name <$> operand <*
 -- Parses a constant directive.
 constantDirective :: CharParser ParserState Statement
 constantDirective = do
-  d <- reserved "constant" *> (ConstantDirective <$> constant <*> (comma *> dataValue))
+  d <- reserved "constant" *> (ConstantDirective <$> identifier <*> (comma *> dataValue))
   updateState . addConstant $ d
   return d
 
@@ -141,7 +140,7 @@ instruction = do
 -- Parses a statement and increments the program address.
 statement :: CharParser ParserState Statement
 statement = do
-  l <- optionMaybe (label <* colon)
+  l <- optionMaybe (identifier <* colon)
   updateState $ maybe id addLabel l
   instruction <|> constantDirective
 
