@@ -3,10 +3,9 @@
 -- This module defines the parser which is used to parse the assembly source
 -- code into an AST.
 module Parser (
-    address
-  , constant
+    addressValue
+  , dataValue
   , register
-  , label
   , statement
   , statements
   , parsePsmFile
@@ -23,12 +22,27 @@ import Text.ParserCombinators.Parsec.Language
 import Text.ParserCombinators.Parsec.Token (TokenParser)
 import qualified Text.ParserCombinators.Parsec.Token as Token
 
+data ParserState = ParserState {
+    parserStateAddress     :: AddressValue
+  , parserStateLabelMap    :: LabelMap
+  , parserStateConstantMap :: ConstantMap
+  } deriving (Show)
+
+type ParserResult = ([Statement], ConstantMap, LabelMap)
+
 parserState = ParserState {
-    parserStateAddress  = 0
-  , parserStateLabelMap = Map.empty
+    parserStateAddress     = 0
+  , parserStateConstantMap = Map.empty
+  , parserStateLabelMap    = Map.empty
   }
 
-addLabel :: Label -> ParserState -> ParserState
+addConstant :: Statement -> ParserState -> ParserState
+addConstant (ConstantDirective c d) state = state { parserStateConstantMap = constantMap' }
+  where
+    constantMap  = parserStateConstantMap state
+    constantMap' = Map.insert c d constantMap
+
+addLabel :: Identifier -> ParserState -> ParserState
 addLabel l state = state { parserStateLabelMap = labelMap' }
   where
     a = parserStateAddress state
@@ -63,8 +77,8 @@ psm = Token.makeTokenParser psmDef
 
 colon      = Token.colon psm
 comma      = Token.comma psm
+identifier = Token.identifier psm
 lexeme     = Token.lexeme psm
-label      = Token.identifier psm
 reserved   = Token.reserved psm
 whiteSpace = Token.whiteSpace psm
 
@@ -73,13 +87,13 @@ hexDigits :: (Enum a) => Int -> CharParser ParserState a
 hexDigits n = decode <$> count n hexDigit <* notFollowedBy (identLetter psmDef)
   where decode x = toEnum . fst . head . readHex $ x
 
--- Parses a 12-bit address.
-address :: CharParser ParserState Address
-address = (lexeme $ try $ Address <$> hexDigits 3) <?> "address"
+-- Parses a 12-bit address value.
+addressValue :: CharParser ParserState AddressValue
+addressValue = (lexeme $ try $ AddressValue <$> hexDigits 3) <?> "address value"
 
--- Parses a 8-bit constant value.
-constant :: CharParser ParserState Constant
-constant = (lexeme $ try $ Constant <$> hexDigits 2) <?> "constant"
+-- Parses a 8-bit data value.
+dataValue :: CharParser ParserState DataValue
+dataValue = (lexeme $ try $ DataValue <$> hexDigits 2) <?> "data value"
 
 -- Parses a register name.
 register :: CharParser ParserState Register
@@ -87,12 +101,12 @@ register = (lexeme $ try $ oneOf "sS" *> hexDigits 1) <?> "register"
 
 -- Parses an operand.
 operand :: CharParser ParserState Operand
-operand = addressOperand <|> constantOperand <|> registerOperand <|> labelOperand <?> "operand"
+operand = addressOperand <|> dataOperand <|> registerOperand <|> identifierOperand <?> "operand"
   where
-    addressOperand  = AddressOperand  <$> address
-    constantOperand = ConstantOperand <$> constant
-    labelOperand    = LabelOperand    <$> label
-    registerOperand = RegisterOperand <$> register
+    addressOperand    = AddressOperand    <$> addressValue
+    dataOperand       = DataOperand       <$> dataValue
+    identifierOperand = IdentifierOperand <$> identifier
+    registerOperand   = RegisterOperand   <$> register
 
 -- Parses an instruction of arity 0.
 nullaryInstruction :: String -> CharParser ParserState Statement
@@ -106,24 +120,39 @@ unaryInstruction name = reserved name *> (UnaryInstruction name <$> operand)
 binaryInstruction :: String -> CharParser ParserState Statement
 binaryInstruction name = reserved name *> (BinaryInstruction name <$> operand <*> (comma *> operand))
 
--- Parses a statement and increments the program address.
-statement :: CharParser ParserState Statement
-statement = do
-  l <- optionMaybe (label <* colon)
-  updateState $ maybe id addLabel l
-  i <- instruction
-  updateState incrementAddress
-  return i
+-- Parses a constant directive.
+constantDirective :: CharParser ParserState Statement
+constantDirective = do
+  d <- reserved "constant" *> (ConstantDirective <$> identifier <*> (comma *> dataValue))
+  updateState . addConstant $ d
+  return d
+
+instruction :: CharParser ParserState Statement
+instruction = do
+    i <- choice $ nullaryInstructions ++ unaryInstructions ++ binaryInstructions
+    updateState incrementAddress
+    return i
   where
     nullaryInstructions = map nullaryInstruction nullaryInstructionNames
     unaryInstructions   = map unaryInstruction unaryInstructionNames
     binaryInstructions  = map binaryInstruction binaryInstructionNames
-    instruction         = choice $ nullaryInstructions ++ unaryInstructions ++ binaryInstructions
+
+label :: CharParser ParserState Identifier
+label = do
+  l <- identifier <* colon
+  updateState . addLabel $ l
+  return l
+
+-- Parses a statement and increments the program address.
+statement :: CharParser ParserState Statement
+statement = optional label *> (constantDirective <|> instruction)
 
 -- Parses multiple statements and returns a label map.
 statements :: CharParser ParserState ParserResult
-statements = whiteSpace *> ((,) <$> many statement <*> labelMap) <* eof
-  where labelMap = parserStateLabelMap <$> getState
+statements = whiteSpace *> ((,,) <$> many statement <*> constantMap <*> labelMap) <* eof
+  where
+    constantMap = parserStateConstantMap <$> getState
+    labelMap    = parserStateLabelMap    <$> getState
 
 -- Parses a file, returning the statements and a label map.
 parsePsmFile :: FilePath -> IO (Either ParseError ParserResult)
