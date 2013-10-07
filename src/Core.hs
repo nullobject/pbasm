@@ -85,3 +85,5 @@ data ParserState = ParserState {
     -- A map from labels to addresses.
   , parserStateLabelMap :: LabelMap
   } deriving (Show)
+
+type ParserResult = ([Statement], LabelMap)

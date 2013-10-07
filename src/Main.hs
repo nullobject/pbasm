@@ -13,5 +13,4 @@ main = do
     Left e -> print e
     Right (statements, labelMap) -> do
       let opcodes = runAssembler statements labelMap
-      print labelMap
       print opcodes
