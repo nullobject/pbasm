@@ -3,7 +3,7 @@ module ParserSpec where
 import Core
 import Parser
 
-import Data.Map (fromList)
+import Data.Map (empty, fromList)
 import Test.Hspec
 import Text.ParserCombinators.Parsec (runParser)
 
@@ -22,47 +22,47 @@ main = hspec spec
 
 spec :: Spec
 spec = do
-  describe "address" $ do
+  describe "addressValue" $ do
     it "parses a lowercase 3 digit hexadecimal string" $ do
-      let result = fromRight $ parse address "abc"
+      let result = fromRight $ parse addressValue "abc"
       result `shouldBe` 0xABC
 
     it "parses an uppercase 3 digit hexadecimal string" $ do
-      let result = fromRight $ parse address "ABC"
+      let result = fromRight $ parse addressValue "ABC"
       result `shouldBe` 0xABC
 
     it "fails with less than 3 digits" $ do
-      let result = show $ fromLeft $ parse address "ff"
-      result `shouldContain` "expecting address"
+      let result = show $ fromLeft $ parse addressValue "ff"
+      result `shouldContain` "expecting address value"
 
     it "fails with more than 3 digits" $ do
-      let result = show $ fromLeft $ parse address "ffff"
-      result `shouldContain` "expecting address"
+      let result = show $ fromLeft $ parse addressValue "ffff"
+      result `shouldContain` "expecting address value"
 
     it "fails with an invalid hexadecimal string" $ do
-      let result = show $ fromLeft $ parse address "zzz"
-      result `shouldContain` "expecting address"
+      let result = show $ fromLeft $ parse addressValue "zzz"
+      result `shouldContain` "expecting address value"
 
-  describe "constant" $ do
+  describe "dataValue" $ do
     it "parses a lowercase 2 digit hexadecimal string" $ do
-      let result = fromRight $ parse constant "ab"
+      let result = fromRight $ parse dataValue "ab"
       result `shouldBe` 0xAB
 
     it "parses an uppercase 2 digit hexadecimal string" $ do
-      let result = fromRight $ parse constant "AB"
+      let result = fromRight $ parse dataValue "AB"
       result `shouldBe` 0xAB
 
     it "fails with an invalid hexadecimal string" $ do
-      let result = show $ fromLeft $ parse constant "zz"
-      result `shouldContain` "expecting constant"
+      let result = show $ fromLeft $ parse dataValue "zz"
+      result `shouldContain` "expecting data value"
 
     it "fails with less than 2 digits" $ do
-      let result = show $ fromLeft $ parse constant "f"
-      result `shouldContain` "expecting constant"
+      let result = show $ fromLeft $ parse dataValue "f"
+      result `shouldContain` "expecting data value"
 
     it "fails with more than 2 digits" $ do
-      let result = show $ fromLeft $ parse constant "fff"
-      result `shouldContain` "expecting constant"
+      let result = show $ fromLeft $ parse dataValue "fff"
+      result `shouldContain` "expecting data value"
 
   describe "register" $ do
     it "parses a lowercase register name" $ do
@@ -77,21 +77,34 @@ spec = do
       let result = show $ fromLeft $ parse register "sz"
       result `shouldContain` "expecting register"
 
-  describe "label" $ do
-    it "parses a label" $ do
-      let result = fromRight $ parse label "foo:"
-      result `shouldBe` "foo"
-
   describe "statement" $ do
-    it "parses statement" $ do
-      let result = fromRight $ parse statement "foo: LOAD s0, s1"
+    it "parses a constant directive" $ do
+      let result = fromRight $ parse statement "CONSTANT foo, ff"
+      result `shouldBe` (ConstantDirective "foo" 0xFF)
+
+    it "parses a nullary instruction" $ do
+      let result = fromRight $ parse statement "RETURN"
+      result `shouldBe` (NullaryInstruction "return")
+
+    it "parses a unary instruction" $ do
+      let result = fromRight $ parse statement "CALL fff"
+      result `shouldBe` (UnaryInstruction "call" (AddressOperand 0xFFF))
+
+    it "parses a binary instruction" $ do
+      let result = fromRight $ parse statement "LOAD s0, s1"
       result `shouldBe` (BinaryInstruction "load" (RegisterOperand Register0) (RegisterOperand Register1))
 
   describe "statements" $ do
-    it "parses statements" $ do
-      let result = fromRight $ parse statements "LOAD s0, s1\nfoo: CALL bar\nbar: RETURN"
-      let instructions = [ (BinaryInstruction "load" (RegisterOperand Register0) (RegisterOperand Register1))
-                         , (UnaryInstruction "call" (LabelOperand "bar"))
+    it "updates the label map" $ do
+      let result = fromRight $ parse statements "foo: CALL bar\nbar: RETURN"
+      let instructions = [ (UnaryInstruction "call" (IdentifierOperand "bar"))
                          , (NullaryInstruction "return") ]
-      let labelMap = fromList [("foo", 1), ("bar", 2)]
-      result `shouldBe` (instructions, labelMap)
+      let labelMap = fromList [("foo", 0), ("bar", 1)]
+      result `shouldBe` (instructions, empty, labelMap)
+
+    it "updates the constant map" $ do
+      let result = fromRight $ parse statements "CONSTANT foo, 00\nCONSTANT bar, 01"
+      let directives = [ (ConstantDirective "foo" 0x00)
+                       , (ConstantDirective "bar" 0x01) ]
+      let constantMap = fromList [("foo", 0), ("bar", 1)]
+      result `shouldBe` (directives, constantMap, empty)

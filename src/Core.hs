@@ -3,32 +3,31 @@ module Core where
 import Data.Map
 import Data.Word
 
-type Label = String
-type Name  = String
+type Identifier = String
 
--- A 12-bit program address.
-newtype Address = Address Word16 deriving (Eq, Show)
+-- A 12-bit address value.
+newtype AddressValue = AddressValue Word16 deriving (Eq, Show)
 
-instance Num Address where
-  (Address x) + (Address y) = Address (x + y)
-  (Address x) - (Address y) = Address (x - y)
-  (Address x) * (Address y) = Address (x * y)
-  abs x                     = x
-  signum 0                  = 0
-  signum _                  = 1
-  fromInteger i             = Address (fromInteger i)
+instance Num AddressValue where
+  (AddressValue x) + (AddressValue y) = AddressValue (x + y)
+  (AddressValue x) - (AddressValue y) = AddressValue (x - y)
+  (AddressValue x) * (AddressValue y) = AddressValue (x * y)
+  abs x                               = x
+  signum 0                            = 0
+  signum _                            = 1
+  fromInteger i                       = AddressValue (fromInteger i)
 
 -- An 8-bit constant value.
-newtype Constant = Constant Word8 deriving (Eq, Show)
+newtype DataValue = DataValue Word8 deriving (Eq, Show)
 
-instance Num Constant where
-  (Constant x) + (Constant y) = Constant (x + y)
-  (Constant x) - (Constant y) = Constant (x - y)
-  (Constant x) * (Constant y) = Constant (x * y)
-  abs x                       = x
-  signum 0                    = 0
-  signum _                    = 1
-  fromInteger i               = Constant (fromInteger i)
+instance Num DataValue where
+  (DataValue x) + (DataValue y) = DataValue (x + y)
+  (DataValue x) - (DataValue y) = DataValue (x - y)
+  (DataValue x) * (DataValue y) = DataValue (x * y)
+  abs x                         = x
+  signum 0                      = 0
+  signum _                      = 1
+  fromInteger i                 = DataValue (fromInteger i)
 
 -- The PicoBlaze has 16 general purpose 8-bit registers.
 data Register =
@@ -39,27 +38,27 @@ data Register =
   deriving (Enum, Eq, Show)
 
 data Operand =
-    AddressOperand  Address
-  | ConstantOperand Constant
-  | LabelOperand    Label
-  | RegisterOperand Register
+    AddressOperand    AddressValue
+  | DataOperand       DataValue
+  | IdentifierOperand Identifier
+  | RegisterOperand   Register
   deriving (Eq, Show)
 
 data Statement =
-    -- Assigns a name to a constant value. For example:
-    ConstantDirective Name Constant
+    -- Assigns a name to a constant value.
+    ConstantDirective Identifier DataValue
 
     -- Defines a list of characters for use with OUTPUTK and LOAD&RETURN
     -- instructions.
-  | StringDirective Name String
+  | StringDirective Identifier String
 
     -- Defines a list of values for use with OUTPUTK and LOAD&RETURN
     -- instructions.
-  | TableDirective Name [Constant]
+  | TableDirective Identifier [DataValue]
 
     -- Forces the assembler to assemble all subsequent instructions starting at
     -- the address defined.
-  | AddressDirective Address
+  | AddressDirective AddressValue
 
     -- Inserts the contents of another file into the program immediately
     -- following the directive.
@@ -75,15 +74,8 @@ data Statement =
   | BinaryInstruction String Operand Operand
   deriving (Eq, Show)
 
--- A map from lables to addresses.
-type LabelMap = Map Label Address
+-- A map from constants to data values.
+type ConstantMap = Map Identifier DataValue
 
-data ParserState = ParserState {
-    -- The current program address.
-    parserStateAddress :: Address
-
-    -- A map from labels to addresses.
-  , parserStateLabelMap :: LabelMap
-  } deriving (Show)
-
-type ParserResult = ([Statement], LabelMap)
+-- A map from labels to address values.
+type LabelMap = Map Identifier AddressValue
