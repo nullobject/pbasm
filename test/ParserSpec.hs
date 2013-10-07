@@ -3,7 +3,7 @@ module ParserSpec where
 import Core
 import Parser
 
-import Data.Map (fromList)
+import Data.Map (empty, fromList)
 import Test.Hspec
 import Text.ParserCombinators.Parsec (runParser)
 
@@ -77,21 +77,34 @@ spec = do
       let result = show $ fromLeft $ parse register "sz"
       result `shouldContain` "expecting register"
 
-  describe "label" $ do
-    it "parses a label" $ do
-      let result = fromRight $ parse label "foo:"
-      result `shouldBe` "foo"
-
   describe "statement" $ do
-    it "parses statement" $ do
-      let result = fromRight $ parse statement "foo: LOAD s0, s1"
+    it "parses a constant directive" $ do
+      let result = fromRight $ parse statement "CONSTANT foo, ff"
+      result `shouldBe` (ConstantDirective "foo" 0xFF)
+
+    it "parses a nullary instruction" $ do
+      let result = fromRight $ parse statement "RETURN"
+      result `shouldBe` (NullaryInstruction "return")
+
+    it "parses a unary instruction" $ do
+      let result = fromRight $ parse statement "CALL fff"
+      result `shouldBe` (UnaryInstruction "call" (AddressOperand 0xFFF))
+
+    it "parses a binary instruction" $ do
+      let result = fromRight $ parse statement "LOAD s0, s1"
       result `shouldBe` (BinaryInstruction "load" (RegisterOperand Register0) (RegisterOperand Register1))
 
   describe "statements" $ do
-    it "parses statements" $ do
-      let result = fromRight $ parse statements "LOAD s0, s1\nfoo: CALL bar\nbar: RETURN"
-      let instructions = [ (BinaryInstruction "load" (RegisterOperand Register0) (RegisterOperand Register1))
-                         , (UnaryInstruction "call" (LabelOperand "bar"))
+    it "updates the label map" $ do
+      let result = fromRight $ parse statements "foo: CALL bar\nbar: RETURN"
+      let instructions = [ (UnaryInstruction "call" (LabelOperand "bar"))
                          , (NullaryInstruction "return") ]
-      let labelMap = fromList [("foo", 1), ("bar", 2)]
-      result `shouldBe` (instructions, labelMap)
+      let labelMap = fromList [("foo", 0), ("bar", 1)]
+      result `shouldBe` (instructions, empty, labelMap)
+
+    it "updates the constant map" $ do
+      let result = fromRight $ parse statements "CONSTANT foo, 00\nCONSTANT bar, 01"
+      let directives = [ (ConstantDirective "foo" 0x00)
+                       , (ConstantDirective "bar" 0x01) ]
+      let constantMap = fromList [("foo", 0), ("bar", 1)]
+      result `shouldBe` (directives, constantMap, empty)

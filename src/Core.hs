@@ -3,8 +3,9 @@ module Core where
 import Data.Map
 import Data.Word
 
-type Label = String
-type Name  = String
+type Constant = String
+type Label    = String
+type Name     = String
 
 -- A 12-bit address value.
 newtype AddressValue = AddressValue Word16 deriving (Eq, Show)
@@ -46,8 +47,8 @@ data Operand =
   deriving (Eq, Show)
 
 data Statement =
-    -- Assigns a name to a constant value. For example:
-    ConstantDirective Name DataValue
+    -- Assigns a name to a constant value.
+    ConstantDirective Constant DataValue
 
     -- Defines a list of characters for use with OUTPUTK and LOAD&RETURN
     -- instructions.
@@ -75,5 +76,8 @@ data Statement =
   | BinaryInstruction String Operand Operand
   deriving (Eq, Show)
 
--- A map from lables to addresses.
+-- A map from constants to data values.
+type ConstantMap = Map Constant DataValue
+
+-- A map from labels to address values.
 type LabelMap = Map Label AddressValue
