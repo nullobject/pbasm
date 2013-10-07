@@ -101,12 +101,12 @@ register = (lexeme $ try $ oneOf "sS" *> hexDigits 1) <?> "register"
 
 -- Parses an operand.
 operand :: CharParser ParserState Operand
-operand = addressOperand <|> dataOperand <|> registerOperand <|> labelOperand <?> "operand"
+operand = addressOperand <|> dataOperand <|> registerOperand <|> identifierOperand <?> "operand"
   where
-    addressOperand  = AddressOperand  <$> addressValue
-    dataOperand     = DataOperand     <$> dataValue
-    labelOperand    = LabelOperand    <$> identifier
-    registerOperand = RegisterOperand <$> register
+    addressOperand    = AddressOperand    <$> addressValue
+    dataOperand       = DataOperand       <$> dataValue
+    identifierOperand = IdentifierOperand <$> identifier
+    registerOperand   = RegisterOperand   <$> register
 
 -- Parses an instruction of arity 0.
 nullaryInstruction :: String -> CharParser ParserState Statement
@@ -137,12 +137,15 @@ instruction = do
     unaryInstructions   = map unaryInstruction unaryInstructionNames
     binaryInstructions  = map binaryInstruction binaryInstructionNames
 
+label :: CharParser ParserState Identifier
+label = do
+  l <- identifier <* colon
+  updateState . addLabel $ l
+  return l
+
 -- Parses a statement and increments the program address.
 statement :: CharParser ParserState Statement
-statement = do
-  l <- optionMaybe (identifier <* colon)
-  updateState $ maybe id addLabel l
-  instruction <|> constantDirective
+statement = optional label *> (constantDirective <|> instruction)
 
 -- Parses multiple statements and returns a label map.
 statements :: CharParser ParserState ParserResult

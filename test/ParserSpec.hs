@@ -97,7 +97,7 @@ spec = do
   describe "statements" $ do
     it "updates the label map" $ do
       let result = fromRight $ parse statements "foo: CALL bar\nbar: RETURN"
-      let instructions = [ (UnaryInstruction "call" (LabelOperand "bar"))
+      let instructions = [ (UnaryInstruction "call" (IdentifierOperand "bar"))
                          , (NullaryInstruction "return") ]
       let labelMap = fromList [("foo", 0), ("bar", 1)]
       result `shouldBe` (instructions, empty, labelMap)

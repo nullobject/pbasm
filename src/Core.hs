@@ -38,10 +38,10 @@ data Register =
   deriving (Enum, Eq, Show)
 
 data Operand =
-    AddressOperand  AddressValue
-  | DataOperand     DataValue
-  | LabelOperand    Identifier
-  | RegisterOperand Register
+    AddressOperand    AddressValue
+  | DataOperand       DataValue
+  | IdentifierOperand Identifier
+  | RegisterOperand   Register
   deriving (Eq, Show)
 
 data Statement =
