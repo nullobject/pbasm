@@ -121,10 +121,10 @@ statement = do
     instruction         = choice $ nullaryInstructions ++ unaryInstructions ++ binaryInstructions
 
 -- Parses multiple statements and returns a label map.
-statements :: CharParser ParserState ([Statement], LabelMap)
+statements :: CharParser ParserState ParserResult
 statements = whiteSpace *> ((,) <$> many statement <*> labelMap) <* eof
   where labelMap = parserStateLabelMap <$> getState
 
 -- Parses a file, returning the statements and a label map.
-parsePsmFile :: FilePath -> IO (Either ParseError ([Statement], LabelMap))
+parsePsmFile :: FilePath -> IO (Either ParseError ParserResult)
 parsePsmFile filePath = runParser statements parserState filePath <$> readFile filePath
