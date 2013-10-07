@@ -93,5 +93,5 @@ spec = do
       let instructions = [ (BinaryInstruction "load" (RegisterOperand Register0) (RegisterOperand Register1))
                          , (UnaryInstruction "call" (LabelOperand "bar"))
                          , (NullaryInstruction "return") ]
-      let map = fromList [("foo", 1), ("bar", 2)]
-      result `shouldBe` (instructions, map)
+      let labelMap = fromList [("foo", 1), ("bar", 2)]
+      result `shouldBe` (instructions, labelMap)

@@ -1,8 +1,7 @@
 -- This module defines the assember which is used to transform an AST into
 -- machine code.
 module Assembler (
-    assemble
-  , runAssembler
+    runAssembler
   ) where
 
 import Core
@@ -23,7 +22,7 @@ fromConstant (Constant c) = fromIntegral c
 fromRegister :: Register -> Word32
 fromRegister = fromIntegral . fromEnum
 
--- Packs the given instruction into binary form.
+-- Packs the given instruction into binary format.
 pack :: Word32 -> Operand -> Operand -> AssemblerState Word32
 
 pack op (RegisterOperand x) (RegisterOperand y) = do
@@ -57,5 +56,6 @@ assemble (UnaryInstruction "call" x) = pack 0x20 x (ConstantOperand 0x00)
 
 assemble _ = return 0x00000
 
-runAssembler :: ParserResult -> [Word32]
-runAssembler (statements, labelMap) = runReader (mapM assemble statements) labelMap
+-- Assembles the given statements into binary format.
+runAssembler :: [Statement] -> LabelMap -> [Word32]
+runAssembler statements labelMap = runReader (mapM assemble statements) labelMap

@@ -11,6 +11,6 @@ main = do
   result <- parsePsmFile $ head input
   case result of
     Left e -> print e
-    Right result -> do
-      let opcodes = runAssembler result
+    Right (statements, labelMap) -> do
+      let opcodes = runAssembler statements labelMap
       print opcodes
