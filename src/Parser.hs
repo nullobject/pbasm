@@ -15,8 +15,8 @@ module Parser (
 import Core
 
 import Control.Applicative hiding (many, optional, (<|>))
+import Data.Char (digitToInt)
 import qualified Data.Map as Map
-import Numeric (readHex)
 import Text.ParserCombinators.Parsec hiding (label)
 import Text.ParserCombinators.Parsec.Language
 import Text.ParserCombinators.Parsec.Token (TokenParser)
@@ -82,22 +82,41 @@ lexeme     = Token.lexeme psm
 reserved   = Token.reserved psm
 whiteSpace = Token.whiteSpace psm
 
--- Parses exactly n hexadecimal digits.
-hexDigits :: (Enum a) => Int -> CharParser ParserState a
-hexDigits n = decode <$> count n hexDigit <* notFollowedBy (identLetter psmDef)
-  where decode x = toEnum . fst . head . readHex $ x
+-- Parses a base-n number using the given digit parser.
+number :: Int -> CharParser ParserState Char -> CharParser ParserState Int
+number base baseDigit = do
+  digits <- many1 baseDigit
+  let n = foldl (\x d -> (base * x) + digitToInt d) 0 digits
+  seq n (return n)
+
+-- Parses a hexadecimal number.
+hexadecimal :: (Enum a) => CharParser ParserState a
+hexadecimal = try $ toEnum <$> number 16 hexDigit <* notFollowedBy (identLetter psmDef)
+
+-- Parses a decimal number.
+decimal :: (Enum a) => CharParser ParserState a
+decimal = try $ toEnum <$> number 10 digit <* string "'" <* oneOf "dD" <* notFollowedBy (identLetter psmDef)
+
+-- Parses a binary number.
+binary :: (Enum a) => CharParser ParserState a
+binary = try $ toEnum <$> number 2 binDigit <* string "'" <* oneOf "bB" <* notFollowedBy (identLetter psmDef)
+  where binDigit = oneOf "01"
+
+-- Parses an integer in hexadecimal, decimal, or binary format.
+integer :: (Enum a) => CharParser ParserState a
+integer = choice [hexadecimal, decimal, binary]
 
 -- Parses a 12-bit address value.
 addressValue :: CharParser ParserState AddressValue
-addressValue = (lexeme $ try $ AddressValue <$> hexDigits 3) <?> "address value"
+addressValue = (lexeme $ AddressValue <$> integer) <?> "address value"
 
 -- Parses a 8-bit data value.
 dataValue :: CharParser ParserState DataValue
-dataValue = (lexeme $ try $ DataValue <$> hexDigits 2) <?> "data value"
+dataValue = (lexeme $ DataValue <$> integer) <?> "data value"
 
 -- Parses a register name.
 register :: CharParser ParserState Register
-register = (lexeme $ try $ oneOf "sS" *> hexDigits 1) <?> "register"
+register = (lexeme $ try $ oneOf "sS" *> hexadecimal) <?> "register"
 
 -- Parses an operand.
 operand :: CharParser ParserState Operand

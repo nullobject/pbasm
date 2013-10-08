@@ -23,55 +23,43 @@ main = hspec spec
 spec :: Spec
 spec = do
   describe "addressValue" $ do
-    it "parses a lowercase 3 digit hexadecimal string" $ do
-      let result = fromRight $ parse addressValue "abc"
-      result `shouldBe` 0xABC
+    it "parses a hexadecimal value" $ do
+      fromRight (parse addressValue "001") `shouldBe` 0x001
+      fromRight (parse addressValue "fff") `shouldBe` 0xFFF
 
-    it "parses an uppercase 3 digit hexadecimal string" $ do
-      let result = fromRight $ parse addressValue "ABC"
-      result `shouldBe` 0xABC
+    it "parses a decimal value" $ do
+      fromRight (parse addressValue "1'd") `shouldBe` 0x001
+      fromRight (parse addressValue "4095'd") `shouldBe` 0xFFF
 
-    it "fails with less than 3 digits" $ do
-      let result = show $ fromLeft $ parse addressValue "ff"
-      result `shouldContain` "expecting address value"
+    it "parses a binary value" $ do
+      fromRight (parse addressValue "1'b") `shouldBe` 0x001
+      fromRight (parse addressValue "111111111111'b") `shouldBe` 0xFFF
 
-    it "fails with more than 3 digits" $ do
-      let result = show $ fromLeft $ parse addressValue "ffff"
-      result `shouldContain` "expecting address value"
-
-    it "fails with an invalid hexadecimal string" $ do
-      let result = show $ fromLeft $ parse addressValue "zzz"
+    it "fails with an invalid value" $ do
+      let result = show $ fromLeft $ parse addressValue "lol"
       result `shouldContain` "expecting address value"
 
   describe "dataValue" $ do
-    it "parses a lowercase 2 digit hexadecimal string" $ do
-      let result = fromRight $ parse dataValue "ab"
-      result `shouldBe` 0xAB
+    it "parses a hexadecimal value" $ do
+      fromRight (parse dataValue "01") `shouldBe` 0x01
+      fromRight (parse dataValue "ff") `shouldBe` 0xFF
 
-    it "parses an uppercase 2 digit hexadecimal string" $ do
-      let result = fromRight $ parse dataValue "AB"
-      result `shouldBe` 0xAB
+    it "parses a decimal value" $ do
+      fromRight (parse dataValue "001'd") `shouldBe` 0x01
+      fromRight (parse dataValue "255'd") `shouldBe` 0xFF
 
-    it "fails with an invalid hexadecimal string" $ do
-      let result = show $ fromLeft $ parse dataValue "zz"
-      result `shouldContain` "expecting data value"
+    it "parses a binary value" $ do
+      fromRight (parse addressValue "1'b") `shouldBe` 0x01
+      fromRight (parse addressValue "11111111'b") `shouldBe` 0xFF
 
-    it "fails with less than 2 digits" $ do
-      let result = show $ fromLeft $ parse dataValue "f"
-      result `shouldContain` "expecting data value"
-
-    it "fails with more than 2 digits" $ do
-      let result = show $ fromLeft $ parse dataValue "fff"
+    it "fails with an invalid value" $ do
+      let result = show $ fromLeft $ parse dataValue "lol"
       result `shouldContain` "expecting data value"
 
   describe "register" $ do
-    it "parses a lowercase register name" $ do
-      let result = fromRight $ parse register "s0"
-      result `shouldBe` Register0
-
-    it "parses an uppercase register name" $ do
-      let result = fromRight $ parse register "S0"
-      result `shouldBe` Register0
+    it "parses a register name" $ do
+      fromRight (parse register "s0") `shouldBe` Register0
+      fromRight (parse register "S0") `shouldBe` Register0
 
     it "fails with an invalid register name" $ do
       let result = show $ fromLeft $ parse register "sz"
