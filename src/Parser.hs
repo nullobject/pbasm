@@ -32,15 +32,15 @@ constantDirective = do
 
 -- Parses an instruction of arity 0.
 nullaryInstruction :: String -> CharParser u Statement
-nullaryInstruction name = NullaryInstruction name <$ reserved name
+nullaryInstruction name = try $ NullaryInstruction name <$ reserved name
 
 -- Parses an instruction of arity 1.
 unaryInstruction :: String -> CharParser u Statement
-unaryInstruction name = reserved name *> (UnaryInstruction name <$> operand)
+unaryInstruction name = try $ reserved name *> (UnaryInstruction name <$> operand)
 
 -- Parses an instruction of arity 2.
 binaryInstruction :: String -> CharParser u Statement
-binaryInstruction name = reserved name *> (BinaryInstruction name <$> operand <*> (comma *> operand))
+binaryInstruction name = try $ reserved name *> (BinaryInstruction name <$> operand <*> (comma *> operand))
 
 -- Parses a directive.
 directive :: CharParser State Statement
@@ -49,7 +49,7 @@ directive = constantDirective
 -- Parses an instruction and increments the program address.
 instruction :: CharParser State Statement
 instruction = do
-    i <- choice $ nullaryInstructions ++ unaryInstructions ++ binaryInstructions
+    i <- choice $ binaryInstructions ++ unaryInstructions ++ nullaryInstructions
     updateState incrementAddress
     return i
   where nullaryInstructions = map nullaryInstruction nullaryInstructionNames

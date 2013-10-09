@@ -154,6 +154,27 @@ spec = do
       it "assembles a 'RR sX' instruction" $ do
         assemble (UnaryInstruction "rr" (RegisterOperand Register0)) `shouldBe` [0x1400C]
 
+    context "jump" $ do
+      it "assembles a 'JUMP aaa' instruction" $ do
+        assemble (UnaryInstruction "jump" (ValueOperand 0xFFF)) `shouldBe` [0x22FFF]
+        assemble (UnaryInstruction "jump" (IdentifierOperand "foo")) `shouldBe` [0x22001]
+
+      it "assembles a 'JUMP Z, aaa' instruction" $ do
+        assemble (BinaryInstruction "jump" (ConditionOperand ZeroCondition) (ValueOperand 0xFFF)) `shouldBe` [0x32FFF]
+        assemble (BinaryInstruction "jump" (ConditionOperand ZeroCondition) (IdentifierOperand "foo")) `shouldBe` [0x32001]
+
+      it "assembles a 'JUMP NZ, aaa' instruction" $ do
+        assemble (BinaryInstruction "jump" (ConditionOperand NotZeroCondition) (ValueOperand 0xFFF)) `shouldBe` [0x36FFF]
+        assemble (BinaryInstruction "jump" (ConditionOperand NotZeroCondition) (IdentifierOperand "foo")) `shouldBe` [0x36001]
+
+      it "assembles a 'JUMP C, aaa' instruction" $ do
+        assemble (BinaryInstruction "jump" (ConditionOperand CarryCondition) (ValueOperand 0xFFF)) `shouldBe` [0x3AFFF]
+        assemble (BinaryInstruction "jump" (ConditionOperand CarryCondition) (IdentifierOperand "foo")) `shouldBe` [0x3A001]
+
+      it "assembles a 'JUMP NC, aaa' instruction" $ do
+        assemble (BinaryInstruction "jump" (ConditionOperand NotCarryCondition) (ValueOperand 0xFFF)) `shouldBe` [0x3EFFF]
+        assemble (BinaryInstruction "jump" (ConditionOperand NotCarryCondition) (IdentifierOperand "foo")) `shouldBe` [0x3E001]
+
     context "subroutines" $ do
       it "assembles a 'CALL aaa' instruction" $ do
         assemble (UnaryInstruction "call" (ValueOperand 0xFFF)) `shouldBe` [0x20FFF]

@@ -25,10 +25,25 @@ data Register =
   | RegisterC | RegisterD | RegisterE | RegisterF
   deriving (Enum, Eq, Show)
 
+data Condition =
+    ZeroCondition
+  | NotZeroCondition
+  | CarryCondition
+  | NotCarryCondition
+  deriving (Enum, Eq, Show)
+
+readCondition :: String -> Condition
+readCondition s
+  | s == "z"  = ZeroCondition
+  | s == "nz" = NotZeroCondition
+  | s == "c"  = CarryCondition
+  | s == "nc" = NotCarryCondition
+
 data Operand =
     ValueOperand      Value
   | IdentifierOperand Identifier
   | RegisterOperand   Register
+  | ConditionOperand  Condition
   deriving (Eq, Show)
 
 data Statement =

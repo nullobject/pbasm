@@ -11,6 +11,7 @@ module Parser.Token
   , value
   , register
   , pointer
+  , condition
   , operand
 
   , nullaryInstructionNames
@@ -29,8 +30,9 @@ import qualified Text.ParserCombinators.Parsec.Token as Token
 
 directiveNames          = ["constant", "string", "table", "address", "include"]
 nullaryInstructionNames = ["return"]
-unaryInstructionNames   = ["sl0", "sl1", "slx", "sla", "rl", "sr0", "sr1", "srx", "sra", "rr", "call"]
-binaryInstructionNames  = ["load", "and", "or", "xor", "add", "addcy", "sub", "subcy", "test", "testcy", "compare", "comparecy", "input", "output"]
+unaryInstructionNames   = ["sl0", "sl1", "slx", "sla", "rl", "sr0", "sr1", "srx", "sra", "rr", "call", "jump"]
+binaryInstructionNames  = ["load", "and", "or", "xor", "add", "addcy", "sub", "subcy", "test", "testcy", "compare", "comparecy", "input", "output", "jump"]
+conditionNames          = ["z", "nz", "c", "nc"]
 
 psmDef :: LanguageDef st
 psmDef = emptyDef
@@ -42,7 +44,7 @@ psmDef = emptyDef
   , Token.reservedNames   = reservedNames
   , Token.reservedOpNames = ["~"]
   }
-  where reservedNames = directiveNames ++ nullaryInstructionNames ++ unaryInstructionNames ++ binaryInstructionNames
+  where reservedNames = directiveNames ++ nullaryInstructionNames ++ unaryInstructionNames ++ binaryInstructionNames ++ conditionNames
 
 psm :: TokenParser st
 psm = Token.makeTokenParser psmDef
@@ -53,6 +55,7 @@ identifier = Token.identifier psm
 lexeme     = Token.lexeme psm
 parens     = Token.parens psm
 reserved   = Token.reserved psm
+symbol     = Token.symbol psm
 whiteSpace = Token.whiteSpace psm
 
 binDigit = oneOf "01"
@@ -89,9 +92,15 @@ register = (lexeme $ try $ oneOf "sS" *> hexadecimal) <?> "register"
 pointer :: CharParser u Register
 pointer = (lexeme $ try $ parens register) <?> "pointer"
 
+-- Parses a condition.
+condition :: CharParser u Condition
+condition = (lexeme $ readCondition <$> choice ps) <?> "condition"
+  where ps = map (\name -> name <$ reserved name) conditionNames
+
 -- Parses an operand.
 operand :: CharParser u Operand
-operand = valueOperand <|> registerOperand <|> identifierOperand <?> "operand"
+operand = valueOperand <|> registerOperand <|> conditionOperand <|> identifierOperand <?> "operand"
   where valueOperand      = ValueOperand      <$> value
         identifierOperand = IdentifierOperand <$> identifier
         registerOperand   = RegisterOperand   <$> (register <|> pointer)
+        conditionOperand  = ConditionOperand  <$> condition

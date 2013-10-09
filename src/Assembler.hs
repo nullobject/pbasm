@@ -107,7 +107,12 @@ assemble (UnaryInstruction "sra" x) = pack 0x14 x (ValueOperand 0x08)
 assemble (UnaryInstruction "rr"  x) = pack 0x14 x (ValueOperand 0x0C)
 
 -- Jump
--- TODO
+assemble (UnaryInstruction "jump" x) = pack 0x22 x (ValueOperand 0x00)
+assemble (BinaryInstruction "jump" (ConditionOperand x) y)
+  | x == ZeroCondition     = pack 0x32 y (ValueOperand 0x00)
+  | x == NotZeroCondition  = pack 0x36 y (ValueOperand 0x00)
+  | x == CarryCondition    = pack 0x3A y (ValueOperand 0x00)
+  | x == NotCarryCondition = pack 0x3E y (ValueOperand 0x00)
 
 -- Subroutines
 assemble (UnaryInstruction "call" x)   = pack 0x20 x (ValueOperand 0x00)

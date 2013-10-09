@@ -55,6 +55,17 @@ spec = do
       let result = show $ fromLeft $ parse pointer "(sz)"
       result `shouldContain` "expecting pointer"
 
+  describe "condition" $ do
+    it "parses a condition" $ do
+      fromRight (parse condition "z") `shouldBe` ZeroCondition
+      fromRight (parse condition "nz") `shouldBe` NotZeroCondition
+      fromRight (parse condition "c") `shouldBe` CarryCondition
+      fromRight (parse condition "nc") `shouldBe` NotCarryCondition
+
+    it "fails with an invalid condition" $ do
+      let result = show $ fromLeft $ parse condition "lol"
+      result `shouldContain` "expecting condition"
+
   describe "operand" $ do
     it "parses a identifier operand" $ do
       fromRight (parse operand "foo") `shouldBe` IdentifierOperand "foo"
@@ -62,6 +73,9 @@ spec = do
     it "parses a register operand" $ do
       fromRight (parse operand "s0") `shouldBe` RegisterOperand Register0
       fromRight (parse operand "(s0)") `shouldBe` RegisterOperand Register0
+
+    it "parses a condition operand" $ do
+      fromRight (parse operand "z") `shouldBe` ConditionOperand ZeroCondition
 
     it "parses a value operand" $ do
       fromRight (parse operand "ff") `shouldBe` ValueOperand 0xFF
