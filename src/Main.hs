@@ -4,6 +4,7 @@ import Assembler
 import Parser
 
 import System.Environment
+import Text.Printf (printf)
 
 main :: IO ()
 main = do
@@ -13,6 +14,4 @@ main = do
     Left e -> print e
     Right (statements, constantMap, labelMap) -> do
       let opcodes = runAssembler statements constantMap labelMap
-      print opcodes
-      print constantMap
-      print labelMap
+      mapM_ (printf "%05X\n") opcodes

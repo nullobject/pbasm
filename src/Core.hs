@@ -1,33 +1,21 @@
 module Core where
 
-import Data.Map
-import Data.Word
+import Data.Map (Map)
+import Data.Word (Word32)
 
 type Identifier = String
 
--- A 12-bit address value.
-newtype AddressValue = AddressValue Word16 deriving (Eq, Show)
+-- An 8-bit data value.
+newtype Value = Value Word32 deriving (Eq, Show)
 
-instance Num AddressValue where
-  (AddressValue x) + (AddressValue y) = AddressValue (x + y)
-  (AddressValue x) - (AddressValue y) = AddressValue (x - y)
-  (AddressValue x) * (AddressValue y) = AddressValue (x * y)
-  abs x                               = x
-  signum 0                            = 0
-  signum _                            = 1
-  fromInteger i                       = AddressValue (fromInteger i)
-
--- An 8-bit constant value.
-newtype DataValue = DataValue Word8 deriving (Eq, Show)
-
-instance Num DataValue where
-  (DataValue x) + (DataValue y) = DataValue (x + y)
-  (DataValue x) - (DataValue y) = DataValue (x - y)
-  (DataValue x) * (DataValue y) = DataValue (x * y)
+instance Num Value where
+  (Value x) + (Value y) = Value (x + y)
+  (Value x) - (Value y) = Value (x - y)
+  (Value x) * (Value y) = Value (x * y)
   abs x                         = x
   signum 0                      = 0
   signum _                      = 1
-  fromInteger i                 = DataValue (fromInteger i)
+  fromInteger i                 = Value (fromInteger i)
 
 -- The PicoBlaze has 16 general purpose 8-bit registers.
 data Register =
@@ -38,15 +26,14 @@ data Register =
   deriving (Enum, Eq, Show)
 
 data Operand =
-    AddressOperand    AddressValue
-  | DataOperand       DataValue
+    ValueOperand      Value
   | IdentifierOperand Identifier
   | RegisterOperand   Register
   deriving (Eq, Show)
 
 data Statement =
     -- Assigns a name to a constant value.
-    ConstantDirective Identifier DataValue
+    ConstantDirective Identifier Value
 
     -- Defines a list of characters for use with OUTPUTK and LOAD&RETURN
     -- instructions.
@@ -54,11 +41,11 @@ data Statement =
 
     -- Defines a list of values for use with OUTPUTK and LOAD&RETURN
     -- instructions.
-  | TableDirective Identifier [DataValue]
+  | TableDirective Identifier [Value]
 
     -- Forces the assembler to assemble all subsequent instructions starting at
     -- the address defined.
-  | AddressDirective AddressValue
+  | AddressDirective Value
 
     -- Inserts the contents of another file into the program immediately
     -- following the directive.
@@ -75,7 +62,7 @@ data Statement =
   deriving (Eq, Show)
 
 -- A map from constants to data values.
-type ConstantMap = Map Identifier DataValue
+type ConstantMap = Map Identifier Value
 
 -- A map from labels to address values.
-type LabelMap = Map Identifier AddressValue
+type LabelMap = Map Identifier Value

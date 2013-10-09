@@ -1,29 +1,34 @@
 -- This module defines the assember which is used to transform an AST into
 -- machine code.
-module Assembler (
-    runAssembler
+module Assembler
+  ( State (..)
+  , assemblerState
+  , runAssembler
   ) where
 
 import Core
 
 import Control.Monad.Reader
 import Data.Bits
-import Data.Map ((!))
+import Data.Map ((!), empty)
 import Data.Maybe
 import Data.Word
 
-data AssemblerState = AssemblerState {
-    assemblerStateLabelMap    :: LabelMap
-  , assemblerStateConstantMap :: ConstantMap
-  } deriving (Show)
+data State = State
+  { stateLabelMap    :: LabelMap
+  , stateConstantMap :: ConstantMap
+  } deriving (Eq, Show)
 
-type AssemblerReader a = Reader AssemblerState a
+type AssemblerReader a = Reader State a
 
-fromAddress :: AddressValue -> Word32
-fromAddress (AddressValue a) = fromIntegral a
+assemblerState :: State
+assemblerState = State
+  { stateLabelMap    = empty
+  , stateConstantMap = empty
+  }
 
-fromData :: DataValue -> Word32
-fromData (DataValue c) = fromIntegral c
+fromValue :: Value -> Word32
+fromValue (Value c) = fromIntegral c
 
 fromRegister :: Register -> Word32
 fromRegister = fromIntegral . fromEnum
@@ -34,21 +39,19 @@ pack :: Word32 -> Operand -> Operand -> AssemblerReader (Maybe Word32)
 pack op (RegisterOperand x) (RegisterOperand y) =
   return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromRegister y `shiftL` 4)
 
-pack op (RegisterOperand x) (DataOperand y) =
-  return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromData y)
+pack op (RegisterOperand x) (ValueOperand y) =
+  return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromValue y)
 
 pack op (RegisterOperand x) (IdentifierOperand y) = do
-  constantMap <- asks assemblerStateConstantMap
-  return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromData $ constantMap ! y)
+  constantMap <- asks stateConstantMap
+  return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromValue $ constantMap ! y)
 
-pack op (AddressOperand x) _ =
-  return $ Just $ (op `shiftL` 12) .|. (fromAddress x)
+pack op (ValueOperand x) _ =
+  return $ Just $ (op `shiftL` 12) .|. (fromValue x)
 
 pack op (IdentifierOperand x) _ = do
-  labelMap <- asks assemblerStateLabelMap
-  return $ Just $ (op `shiftL` 12) .|. (fromAddress $ labelMap ! x)
-
-pack op _ _ = return $ Just $ op `shiftL` 12
+  labelMap <- asks stateLabelMap
+  return $ Just $ (op `shiftL` 12) .|. (fromValue $ labelMap ! x)
 
 -- Assembles the given statement.
 assemble :: Statement -> AssemblerReader (Maybe Word32)
@@ -76,27 +79,45 @@ assemble (BinaryInstruction "subcy" x y@(RegisterOperand _)) = pack 0x1A x y
 assemble (BinaryInstruction "subcy" x y)                     = pack 0x1B x y
 
 -- Test and compare
--- TODO
+assemble (BinaryInstruction "test"      x y@(RegisterOperand _)) = pack 0x0C x y
+assemble (BinaryInstruction "test"      x y)                     = pack 0x0D x y
+assemble (BinaryInstruction "testcy"    x y@(RegisterOperand _)) = pack 0x0E x y
+assemble (BinaryInstruction "testcy"    x y)                     = pack 0x0F x y
+assemble (BinaryInstruction "compare"   x y@(RegisterOperand _)) = pack 0x1C x y
+assemble (BinaryInstruction "compare"   x y)                     = pack 0x1D x y
+assemble (BinaryInstruction "comparecy" x y@(RegisterOperand _)) = pack 0x1E x y
+assemble (BinaryInstruction "comparecy" x y)                     = pack 0x1F x y
 
--- IO
--- TODO
+-- Input and output
+assemble (BinaryInstruction "input"  x y@(RegisterOperand _)) = pack 0x08 x y
+assemble (BinaryInstruction "input"  x y)                     = pack 0x09 x y
+assemble (BinaryInstruction "output" x y@(RegisterOperand _)) = pack 0x2C x y
+assemble (BinaryInstruction "output" x y)                     = pack 0x2D x y
 
 -- Shift and rotate
-assemble (UnaryInstruction "sl0" x) = pack 0x14 x (DataOperand 0x06)
-assemble (UnaryInstruction "sl1" x) = pack 0x14 x (DataOperand 0x07)
+assemble (UnaryInstruction "sl0" x) = pack 0x14 x (ValueOperand 0x06)
+assemble (UnaryInstruction "sl1" x) = pack 0x14 x (ValueOperand 0x07)
+assemble (UnaryInstruction "slx" x) = pack 0x14 x (ValueOperand 0x04)
+assemble (UnaryInstruction "sla" x) = pack 0x14 x (ValueOperand 0x00)
+assemble (UnaryInstruction "rl"  x) = pack 0x14 x (ValueOperand 0x02)
+assemble (UnaryInstruction "sr0" x) = pack 0x14 x (ValueOperand 0x0E)
+assemble (UnaryInstruction "sr1" x) = pack 0x14 x (ValueOperand 0x0F)
+assemble (UnaryInstruction "srx" x) = pack 0x14 x (ValueOperand 0x0A)
+assemble (UnaryInstruction "sra" x) = pack 0x14 x (ValueOperand 0x08)
+assemble (UnaryInstruction "rr"  x) = pack 0x14 x (ValueOperand 0x0C)
 
 -- Jump
 -- TODO
 
 -- Subroutines
-assemble (UnaryInstruction "call" x)   = pack 0x20 x (DataOperand 0x00)
-assemble (NullaryInstruction "return") = pack 0x25 (DataOperand 0x00) (DataOperand 0x00)
+assemble (UnaryInstruction "call" x)   = pack 0x20 x (ValueOperand 0x00)
+assemble (NullaryInstruction "return") = pack 0x25 (ValueOperand 0x00) (ValueOperand 0x00)
 
 -- Default
 assemble _ = return Nothing
 
 -- Assembles the given statements into binary format.
 runAssembler :: [Statement] -> ConstantMap -> LabelMap -> [Word32]
-runAssembler statements constantMap labelMap = catMaybes $ runReader (mapM assemble statements) assemblerState
-  where assemblerState = AssemblerState { assemblerStateConstantMap = constantMap
-                                        , assemblerStateLabelMap    = labelMap }
+runAssembler statements constantMap labelMap = catMaybes $ runReader (mapM assemble statements) state
+  where state = assemblerState { stateLabelMap    = labelMap
+                               , stateConstantMap = constantMap}

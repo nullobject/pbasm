@@ -1,37 +1,41 @@
 -- This module defines the parser state.
-module Parser.State where
+module Parser.State
+  ( State (..)
+  , parserState
+  , addConstant
+  , addLabel
+  , incrementAddress
+  ) where
 
 import Core
 
-import qualified Data.Map as Map
+import Data.Map (empty, insert)
 
-data ParserState = ParserState {
-    parserStateAddress     :: AddressValue
-  , parserStateLabelMap    :: LabelMap
-  , parserStateConstantMap :: ConstantMap
-  } deriving (Show)
+data State = State
+  { stateAddress     :: Value
+  , stateLabelMap    :: LabelMap
+  , stateConstantMap :: ConstantMap
+  } deriving (Eq, Show)
 
-parserState = ParserState {
-    parserStateAddress     = 0
-  , parserStateConstantMap = Map.empty
-  , parserStateLabelMap    = Map.empty
+parserState :: State
+parserState = State
+  { stateAddress     = 0
+  , stateConstantMap = empty
+  , stateLabelMap    = empty
   }
 
-addConstant :: Statement -> ParserState -> ParserState
-addConstant (ConstantDirective constant dataValue) state = state { parserStateConstantMap = constantMap' }
-  where
-    constantMap  = parserStateConstantMap state
-    constantMap' = Map.insert constant dataValue constantMap
+addConstant :: Statement -> State -> State
+addConstant (ConstantDirective constant value) state = state {stateConstantMap = constantMap'}
+  where constantMap  = stateConstantMap state
+        constantMap' = insert constant value constantMap
 
-addLabel :: Identifier -> ParserState -> ParserState
-addLabel identifier state = state { parserStateLabelMap = labelMap' }
-  where
-    address   = parserStateAddress state
-    labelMap  = parserStateLabelMap state
-    labelMap' = Map.insert identifier address labelMap
+addLabel :: Identifier -> State -> State
+addLabel identifier state = state {stateLabelMap = labelMap'}
+  where address   = stateAddress state
+        labelMap  = stateLabelMap state
+        labelMap' = insert identifier address labelMap
 
-incrementAddress :: ParserState -> ParserState
-incrementAddress state = state { parserStateAddress = address' }
-  where
-    address  = parserStateAddress state
-    address' = address + 1
+incrementAddress :: State -> State
+incrementAddress state = state {stateAddress = address'}
+  where address  = stateAddress state
+        address' = address + 1
