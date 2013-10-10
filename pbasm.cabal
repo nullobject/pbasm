@@ -15,6 +15,7 @@ executable pbasm
   main-is:        Main.hs
   build-depends:  base ==4.6.*
                 , containers
+                , filepath
                 , mtl
                 , parsec
 

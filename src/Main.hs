@@ -4,14 +4,20 @@ import Assembler
 import Parser
 
 import System.Environment
-import Text.Printf (printf)
+import System.FilePath
+import System.IO
+import Text.Printf
 
 main :: IO ()
 main = do
-  input <- getArgs
-  result <- parsePsmFile $ head input
+  args <- getArgs
+  let inputFileName = head args
+  result <- parsePsmFile inputFileName
   case result of
     Left e -> print e
     Right (statements, constantMap, labelMap) -> do
       let opcodes = runAssembler statements constantMap labelMap
-      mapM_ (printf "%05X\n") opcodes
+      let outputFileName = takeBaseName inputFileName <.> "hex"
+      out <- openFile outputFileName WriteMode
+      mapM_ (hPrintf out "%05X\n") opcodes
+      hClose out
