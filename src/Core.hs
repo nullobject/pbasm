@@ -38,6 +38,7 @@ readCondition s
   | s == "nz" = NotZeroCondition
   | s == "c"  = CarryCondition
   | s == "nc" = NotCarryCondition
+  | otherwise = error $ "Unknown condition: " ++ s
 
 data Operand =
     ValueOperand      Value

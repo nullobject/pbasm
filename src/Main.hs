@@ -5,7 +5,6 @@ import Parser
 
 import System.Environment
 import System.FilePath
-import System.IO
 import Text.Printf
 
 main :: IO ()
@@ -18,6 +17,5 @@ main = do
     Right (statements, constantMap, labelMap) -> do
       let opcodes = runAssembler statements constantMap labelMap
       let outputFileName = takeBaseName inputFileName <.> "hex"
-      out <- openFile outputFileName WriteMode
-      mapM_ (hPrintf out "%05X\n") opcodes
-      hClose out
+      let result = unlines $ map (printf "%05X") opcodes
+      writeFile outputFileName result
