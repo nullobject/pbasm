@@ -34,7 +34,7 @@ fromRegister :: Register -> Word32
 fromRegister = fromIntegral . fromEnum
 
 -- Packs the given instruction into binary format.
-pack :: Word32 -> Operand -> Operand -> AssemblerReader (Maybe Word32)
+pack :: Word32 -> Operand -> Operand -> AssemblerReader (Maybe Opcode)
 
 pack op (RegisterOperand x) (RegisterOperand y) =
   return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromRegister y `shiftL` 4)
@@ -53,8 +53,10 @@ pack op (IdentifierOperand x) _ = do
   labelMap <- asks stateLabelMap
   return $ Just $ (op `shiftL` 12) .|. (fromValue $ labelMap ! x)
 
--- Assembles the given statement.
-assemble :: Statement -> AssemblerReader (Maybe Word32)
+pack _ _ _ = return Nothing
+
+-- Assembles the given statement into an opcode.
+assemble :: Statement -> AssemblerReader (Maybe Opcode)
 
 -- Register loading
 assemble (BinaryInstruction "load" x y@(RegisterOperand _)) = pack 0x00 x y
@@ -121,8 +123,8 @@ assemble (NullaryInstruction "return") = pack 0x25 (ValueOperand 0x00) (ValueOpe
 -- Default
 assemble _ = return Nothing
 
--- Assembles the given statements into binary format.
-runAssembler :: [Statement] -> ConstantMap -> LabelMap -> [Word32]
-runAssembler statements constantMap labelMap = catMaybes $ runReader (mapM assemble statements) state
-  where state = assemblerState { stateLabelMap    = labelMap
-                               , stateConstantMap = constantMap}
+-- Assembles the given statements into opcodes.
+runAssembler :: ParserResult -> IO [Opcode]
+runAssembler (statements, constantMap, labelMap) = return opcodes
+  where opcodes = catMaybes $ runReader (mapM assemble statements) state
+        state   = assemblerState {stateLabelMap = labelMap, stateConstantMap = constantMap}
