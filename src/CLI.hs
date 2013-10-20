@@ -16,6 +16,7 @@ data Pbasm = Pbasm
   , file     :: FilePath
   } deriving (Show, Data, Typeable)
 
+pbasm :: Pbasm
 pbasm = Pbasm
   {
     assemble = def &= help "Only run the assembler"

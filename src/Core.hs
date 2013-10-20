@@ -1,9 +1,15 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+
 module Core where
 
+import Control.Exception (Exception)
+import Data.Typeable (Typeable)
 import Data.Map (Map)
 import Data.Word (Word32)
 
 type Identifier = String
+
+type Opcode = Word32
 
 -- An 8-bit data value.
 newtype Value = Value Word32 deriving (Eq, Show)
@@ -82,3 +88,20 @@ type ConstantMap = Map Identifier Value
 
 -- A map from labels to address values.
 type LabelMap = Map Identifier Value
+
+type ParserResult = ([Statement], ConstantMap, LabelMap)
+
+data PbasmException =
+    ParserException String
+  | AssemblerException String
+  deriving (Eq, Show, Typeable)
+
+instance Exception PbasmException
+
+isParserError :: PbasmException -> Bool
+isParserError (ParserException _) = True
+isParserError _ = False
+
+isAssemblerError :: PbasmException -> Bool
+isAssemblerError (AssemblerException _) = True
+isAssemblerError _ = False

@@ -3,8 +3,6 @@ module Parser.Token
   ( colon
   , comma
   , identifier
-  , lexeme
-  , parens
   , reserved
   , whiteSpace
 
@@ -28,11 +26,20 @@ import Text.ParserCombinators.Parsec.Language
 import Text.ParserCombinators.Parsec.Token (TokenParser)
 import qualified Text.ParserCombinators.Parsec.Token as Token
 
-directiveNames          = ["constant", "string", "table", "address", "include"]
+directiveNames :: [String]
+directiveNames = ["constant", "string", "table", "address", "include"]
+
+nullaryInstructionNames :: [String]
 nullaryInstructionNames = ["return"]
-unaryInstructionNames   = ["sl0", "sl1", "slx", "sla", "rl", "sr0", "sr1", "srx", "sra", "rr", "call", "jump"]
-binaryInstructionNames  = ["load", "and", "or", "xor", "add", "addcy", "sub", "subcy", "test", "testcy", "compare", "comparecy", "input", "output", "jump"]
-conditionNames          = ["z", "nz", "c", "nc"]
+
+unaryInstructionNames :: [String]
+unaryInstructionNames = ["sl0", "sl1", "slx", "sla", "rl", "sr0", "sr1", "srx", "sra", "rr", "call", "jump"]
+
+binaryInstructionNames :: [String]
+binaryInstructionNames = ["load", "and", "or", "xor", "add", "addcy", "sub", "subcy", "test", "testcy", "compare", "comparecy", "input", "output", "jump"]
+
+conditionNames :: [String]
+conditionNames = ["z", "nz", "c", "nc"]
 
 psmDef :: LanguageDef st
 psmDef = emptyDef
@@ -41,23 +48,35 @@ psmDef = emptyDef
   , Token.commentEnd      = ""
   , Token.commentLine     = ";"
   , Token.nestedComments  = False
-  , Token.reservedNames   = reservedNames
+  , Token.reservedNames   = directiveNames ++ nullaryInstructionNames ++ unaryInstructionNames ++ binaryInstructionNames ++ conditionNames
   , Token.reservedOpNames = ["~"]
   }
-  where reservedNames = directiveNames ++ nullaryInstructionNames ++ unaryInstructionNames ++ binaryInstructionNames ++ conditionNames
 
 psm :: TokenParser st
 psm = Token.makeTokenParser psmDef
 
-colon      = Token.colon psm
-comma      = Token.comma psm
+colon :: CharParser u String
+colon = Token.colon psm
+
+comma :: CharParser u String
+comma = Token.comma psm
+
+identifier :: CharParser u String
 identifier = Token.identifier psm
-lexeme     = Token.lexeme psm
-parens     = Token.parens psm
-reserved   = Token.reserved psm
-symbol     = Token.symbol psm
+
+lexeme :: CharParser u a -> CharParser u a
+lexeme = Token.lexeme psm
+
+parens :: CharParser u a -> CharParser u a
+parens = Token.parens psm
+
+reserved :: String -> CharParser u ()
+reserved = Token.reserved psm
+
+whiteSpace :: CharParser u ()
 whiteSpace = Token.whiteSpace psm
 
+binDigit :: CharParser u Char
 binDigit = oneOf "01"
 
 -- Parses a base-n number using the given digit parser.

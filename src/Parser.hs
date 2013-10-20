@@ -1,8 +1,7 @@
 -- This module defines the parser which is used to parse the assembly source
 -- code into an AST.
 module Parser
-  ( directive
-  , instruction
+  ( statement
   , statements
   , parsePsmFile
   ) where
@@ -12,9 +11,8 @@ import Parser.State
 import Parser.Token
 
 import Control.Applicative hiding (many, optional, (<|>))
-import Text.ParserCombinators.Parsec hiding (State, label)
-
-type Result = ([Statement], ConstantMap, LabelMap)
+import Control.Exception (throw)
+import Text.ParserCombinators.Parsec hiding (ParseError, State, label)
 
 -- Parses a label and updates the label map.
 label :: CharParser State Identifier
@@ -49,23 +47,27 @@ directive = constantDirective
 -- Parses an instruction and increments the program address.
 instruction :: CharParser State Statement
 instruction = do
-    i <- choice $ binaryInstructions ++ unaryInstructions ++ nullaryInstructions
-    updateState incrementAddress
-    return i
+  i <- choice $ binaryInstructions ++ unaryInstructions ++ nullaryInstructions
+  updateState incrementAddress
+  return i
   where nullaryInstructions = map nullaryInstruction nullaryInstructionNames
         unaryInstructions   = map unaryInstruction   unaryInstructionNames
         binaryInstructions  = map binaryInstruction  binaryInstructionNames
 
 -- Parses a statement.
 statement :: CharParser State Statement
-statement = optional label *> (constantDirective <|> instruction)
+statement = optional label *> (directive <|> instruction)
 
 -- Parses multiple statements.
-statements :: CharParser State Result
+statements :: CharParser State ParserResult
 statements = whiteSpace *> ((,,) <$> many statement <*> constantMap <*> labelMap) <* eof
   where constantMap = stateConstantMap <$> getState
         labelMap    = stateLabelMap    <$> getState
 
 -- Parses a PSM file.
-parsePsmFile :: FilePath -> IO (Either ParseError Result)
-parsePsmFile filePath = runParser statements parserState filePath <$> readFile filePath
+parsePsmFile :: FilePath -> IO ParserResult
+parsePsmFile filePath = do
+  result <- runParser statements parserState filePath <$> readFile filePath
+  case result of
+    Right x -> return x
+    Left e  -> throw $ ParserException $ show e

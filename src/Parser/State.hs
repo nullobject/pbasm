@@ -28,6 +28,7 @@ addConstant :: Statement -> State -> State
 addConstant (ConstantDirective constant value) state = state {stateConstantMap = constantMap'}
   where constantMap  = stateConstantMap state
         constantMap' = insert constant value constantMap
+addConstant _ state = state
 
 addLabel :: Identifier -> State -> State
 addLabel identifier state = state {stateLabelMap = labelMap'}

@@ -1,6 +1,7 @@
 module Main where
 
 import Assembler
+import Core
 import CLI
 import Parser
 
@@ -16,13 +17,13 @@ main = do
 
 assembleFile :: FilePath -> IO ()
 assembleFile "" = putStrLn "no input file"
-assembleFile x = do
-  putStrLn $ "Assembling " ++ show x
-  result <- parsePsmFile x
-  case result of
-    Left e -> print e
-    Right (statements, constantMap, labelMap) -> do
-      let opcodes = runAssembler statements constantMap labelMap
-      let outputFileName = takeBaseName x <.> "hex"
-      let result = unlines $ map (printf "%05X") opcodes
-      writeFile outputFileName result
+assembleFile psmFilePath = do
+  putStrLn $ "Assembling " ++ show psmFilePath
+  let hexFilePath = takeBaseName psmFilePath <.> "hex"
+  parsePsmFile psmFilePath >>= runAssembler >>= writeHexFile hexFilePath
+
+-- Writes the opcodes to the given file path.
+writeHexFile :: FilePath -> [Opcode] -> IO ()
+writeHexFile hexFilePath opcodes = do
+  let s = unlines $ map (printf "%05X") opcodes
+  writeFile hexFilePath s
