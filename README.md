@@ -1,4 +1,4 @@
-# PicoBlaze Assembler (pbasm)
+# PicoBlaze Assembler (pbasm) [![Build Status](https://travis-ci.org/nullobject/pbasm.png?branch=master)](https://travis-ci.org/nullobject/pbasm)
 
 This project implements an assembler for the PicoBlaze (KCPSM6) microcontroller in the Haskell programming language.
 
