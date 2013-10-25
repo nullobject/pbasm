@@ -19,6 +19,7 @@ executable pbasm
                 , filepath
                 , mtl
                 , parsec
+                , split
 
 test-suite spec
   type:           exitcode-stdio-1.0
@@ -29,3 +30,4 @@ test-suite spec
                 , hspec
                 , mtl
                 , parsec
+                , split
