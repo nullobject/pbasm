@@ -1,17 +1,24 @@
 -- This module defines the primitive token parsers.
 module Parser.Token
+    -- Token parsers
   ( colon
   , comma
   , identifier
+  , parens
   , reserved
   , whiteSpace
 
+    -- Primitive parsers
+  , hexadecimal
+  , decimal
+  , binary
   , value
   , register
   , pointer
   , condition
   , operand
 
+    -- Instructions
   , nullaryInstructionNames
   , unaryInstructionNames
   , binaryInstructionNames

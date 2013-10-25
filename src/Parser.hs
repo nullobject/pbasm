@@ -12,7 +12,7 @@ import Parser.Token
 
 import Control.Applicative hiding (many, optional, (<|>))
 import Control.Exception (throw)
-import Text.ParserCombinators.Parsec hiding (ParseError, State, label)
+import Text.ParserCombinators.Parsec hiding (State, label)
 
 -- Parses a label and updates the label map.
 label :: CharParser State Identifier
