@@ -13,7 +13,7 @@ main = hspec spec
 spec :: Spec
 spec = do
   describe "assemblerState" $ do
-    it "parses returns an empty parser state" $ do
+    it "parses returns an empty assembler state" $ do
       assemblerState
         `shouldBe`
         State { stateLabelMap    = empty
