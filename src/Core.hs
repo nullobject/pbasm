@@ -94,6 +94,7 @@ type ParserResult = ([Statement], ConstantMap, LabelMap)
 data PbasmException =
     ParserException String
   | AssemblerException String
+  | TemplateException String
   deriving (Eq, Show, Typeable)
 
 instance Exception PbasmException
@@ -105,3 +106,7 @@ isParserError _ = False
 isAssemblerError :: PbasmException -> Bool
 isAssemblerError (AssemblerException _) = True
 isAssemblerError _ = False
+
+isTemplateError :: PbasmException -> Bool
+isTemplateError (TemplateException _) = True
+isTemplateError _ = False
