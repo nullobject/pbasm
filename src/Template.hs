@@ -17,17 +17,10 @@ import Text.ParserCombinators.Parsec hiding (State, label)
 import Text.Printf
 
 data State = State
-    -- A flag representing whether the template is rendering.
-  { stateRendering :: Bool
-
-    -- The template name.
-  , stateName :: String
-
-    -- The ROM instructions.
-  , stateROM :: [Opcode]
-
-    -- The current timestamp.
-  , stateTimestamp :: String
+  { stateName      :: String   -- ^ Template name
+  , stateOpcodes   :: [Opcode] -- ^ ROM instructions
+  , stateRendering :: Bool     -- ^ True when the template is rendering
+  , stateTimestamp :: String   -- ^ Current timestamp
   } deriving (Eq, Show)
 
 bankSize :: Int
@@ -36,9 +29,9 @@ bankSize = 16
 -- Returns the default template state.
 templateState :: State
 templateState = State
-  { stateRendering = False
-  , stateName      = ""
-  , stateROM       = []
+  { stateName      = ""
+  , stateOpcodes   = []
+  , stateRendering = False
   , stateTimestamp = ""
   }
 
@@ -79,7 +72,7 @@ timestampTag = try $ string "timestamp" >> stateTimestamp <$> getState
 romTag :: CharParser State String
 romTag = do
   n <- try $ string "INIT_" *> (fromInteger <$> hexadecimal)
-  rom <- stateROM <$> getState
+  rom <- stateOpcodes <$> getState
   return $ showBank $ romBank rom n
   where showBank = foldr (\opcode -> (++ showHex opcode)) ""
 
@@ -87,7 +80,7 @@ romTag = do
 romPTag :: CharParser State String
 romPTag = do
   n <- try $ string "INITP_" *> (fromInteger <$> hexadecimal)
-  rom <- stateROM <$> getState
+  rom <- stateOpcodes <$> getState
   return $ showBank $ romBankP rom n
   where showBank = foldr (\opcode -> (++ showHex opcode)) ""
 

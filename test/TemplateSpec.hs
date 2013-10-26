@@ -14,10 +14,11 @@ spec = do
     it "returns an empty template state" $ do
       templateState
         `shouldBe`
-        State { stateRendering = False
-              , stateName      = ""
+        State { stateName      = ""
+              , stateOpcodes   = []
+              , stateRendering = False
               , stateTimestamp = ""
-              , stateROM       = [] }
+              }
 
   describe "runTemplate" $ do
     context "when the template is not rendering" $ do
@@ -47,7 +48,7 @@ spec = do
           "tofu\n12345678 paleo\n"
 
       it "replaces a 'INIT_kk' variable when the bank exists" $ do
-        let state = templateState {stateRendering = True, stateROM = [0xF0000..0xF0007]}
+        let state = templateState {stateRendering = True, stateOpcodes = [0xF0000..0xF0007]}
         runTemplate "tofu\n{INIT_00} paleo\n" state
           `shouldReturn`
           "tofu\n0000000000000000000000000000000000070006000500040003000200010000 paleo\n"
@@ -59,7 +60,7 @@ spec = do
           "tofu\n0000000000000000000000000000000000000000000000000000000000000000 paleo\n"
 
       it "replaces a 'INITP_kk' variable when the bank exists" $ do
-        let state = templateState {stateRendering = True, stateROM = [0x00000, 0x10000..0xF0007]}
+        let state = templateState {stateRendering = True, stateOpcodes = [0x00000, 0x10000..0xF0007]}
         runTemplate "tofu\n{INITP_00} paleo\n" state
           `shouldReturn`
           "tofu\n00000000000000000000000000000000000000000000000000000000E4E4E4E4 paleo\n"
