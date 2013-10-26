@@ -10,15 +10,14 @@ module CLI
 import System.Console.CmdArgs
 
 data Pbasm = Pbasm
-  { file     :: FilePath -- ^ Input file path
-  , template :: FilePath -- ^ Template file path
+  { pbasmInputFilePath    :: FilePath       -- ^ Input file path
+  , pbasmTemplateFilePath :: Maybe FilePath -- ^ Optional template file path
   } deriving (Show, Data, Typeable)
 
 pbasm :: Pbasm
 pbasm = Pbasm
-  {
-    template = def &= typFile &= opt "ROM_form.vhd" &= help "Run the templater with an optional file"
-  , file     = def &= args &= typFile
+  { pbasmInputFilePath    = def &= args &= typFile
+  , pbasmTemplateFilePath = def &= explicit &= name "template" &= typFile &= opt "ROM_form.vhd" &= help "Run the templater with an optional file"
   }
   &= summary "pbasm 0.1.0"
   &= details ["For more information visit: https://github.com/nullobject/pbasm"]

@@ -6,40 +6,40 @@ import CLI
 import Parser
 import Template
 
-import System.Console.CmdArgs hiding (name)
+import System.Console.CmdArgs hiding (args, name)
 import System.FilePath
 import Text.Printf
 
 main :: IO ()
 main = do
-  x <- cmdArgs pbasm
-  _ <- assembleFile $ file x
-  return ()
+  args <- cmdArgs pbasm
+
+  let inputFilePath    = pbasmInputFilePath args
+  let templateFilePath = pbasmTemplateFilePath args
+  let name             = takeBaseName inputFilePath
+  let hexFilePath      = takeBaseName inputFilePath <.> "hex"
+  let entityFilePath   = name <.> "vhd"
+
+  assembleFile inputFilePath hexFilePath >>= renderTemplate templateFilePath entityFilePath name >> return ()
 
 -- Assembles the file at the given file path.
-assembleFile :: FilePath -> IO [Opcode]
-assembleFile "" = do {putStrLn "no input file"; return []}
-assembleFile psmFilePath = do
-  let hexFilePath    = takeBaseName psmFilePath <.> "hex"
-  let romFilePath    = takeDirectory psmFilePath </> "ROM_form.vhd"
-  let entityFilePath = takeBaseName hexFilePath <.> "vhd"
-
-  parsePsmFile psmFilePath
-    >>= runAssembler
-    >>= writeHexFile hexFilePath
-    >>= renderTemplate romFilePath entityFilePath (takeBaseName hexFilePath)
-
--- Renders the template to the given file path.
-renderTemplate :: FilePath -> FilePath -> String -> [Opcode] -> IO [Opcode]
-renderTemplate inputFilePath outputFilePath name opcodes = do
-  input <- readFile inputFilePath
-  output <- runTemplate input $ templateState {stateName = name, stateROM = opcodes}
-  writeFile outputFilePath output
-  return opcodes
+assembleFile :: FilePath -> FilePath -> IO [Opcode]
+assembleFile "" _ = do {putStrLn "no input file"; return []}
+assembleFile inputFilePath hexFilePath = do
+  parsePsmFile inputFilePath >>= runAssembler >>= writeHexFile hexFilePath
 
 -- Writes the opcodes to the given file path.
 writeHexFile :: FilePath -> [Opcode] -> IO [Opcode]
-writeHexFile outputFilePath opcodes = do
+writeHexFile hexFilePath opcodes = do
   let output = unlines $ map (printf "%05X") opcodes
-  writeFile outputFilePath output
+  writeFile hexFilePath output
+  return opcodes
+
+-- Renders the template to the given file path.
+renderTemplate :: Maybe FilePath -> FilePath -> String -> [Opcode] -> IO [Opcode]
+renderTemplate Nothing _ _ opcodes = return opcodes
+renderTemplate (Just templateFilePath) entityFilePath name opcodes = do
+  input <- readFile templateFilePath
+  output <- runTemplate input $ templateState {stateName = name, stateOpcodes = opcodes}
+  writeFile entityFilePath output
   return opcodes
