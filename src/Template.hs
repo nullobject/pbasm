@@ -8,6 +8,7 @@ module Template
 
 import Core
 import Parser.Token (hexadecimal)
+import Template.State
 
 import Control.Applicative hiding (many, optional, (<|>))
 import Control.Exception (throw)
@@ -16,24 +17,8 @@ import Data.List.Split (chunksOf)
 import Text.ParserCombinators.Parsec hiding (State, label)
 import Text.Printf
 
-data State = State
-  { stateName      :: String   -- ^ Template name
-  , stateOpcodes   :: [Opcode] -- ^ ROM instructions
-  , stateRendering :: Bool     -- ^ True when the template is rendering
-  , stateTimestamp :: String   -- ^ Current timestamp
-  } deriving (Eq, Show)
-
 bankSize :: Int
 bankSize = 16
-
--- Returns the default template state.
-templateState :: State
-templateState = State
-  { stateName      = ""
-  , stateOpcodes   = []
-  , stateRendering = False
-  , stateTimestamp = ""
-  }
 
 showHex :: Opcode -> String
 showHex opcode = printf "%04X" $ opcode .&. 0xFFFF

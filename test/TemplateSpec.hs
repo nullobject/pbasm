@@ -1,6 +1,5 @@
 module TemplateSpec where
 
-import Core
 import Template
 
 import Test.Hspec
@@ -10,16 +9,6 @@ main = hspec spec
 
 spec :: Spec
 spec = do
-  describe "templateState" $ do
-    it "returns an empty template state" $ do
-      templateState
-        `shouldBe`
-        State { stateName      = ""
-              , stateOpcodes   = []
-              , stateRendering = False
-              , stateTimestamp = ""
-              }
-
   describe "runTemplate" $ do
     context "when the template is not rendering" $ do
       it "renders the lines after the 'begin template' tag" $ do
