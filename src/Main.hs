@@ -8,7 +8,6 @@ import Template
 
 import System.Console.CmdArgs hiding (args, name)
 import System.FilePath
-import Text.Printf
 
 main :: IO ()
 main = do
@@ -31,7 +30,7 @@ assembleFile inputFilePath hexFilePath = do
 -- Writes the opcodes to the given file path.
 writeHexFile :: FilePath -> [Opcode] -> IO [Opcode]
 writeHexFile hexFilePath opcodes = do
-  let output = unlines $ map (printf "%05X") opcodes
+  let output = unlines $ map (showHex 5) opcodes
   writeFile hexFilePath output
   return opcodes
 

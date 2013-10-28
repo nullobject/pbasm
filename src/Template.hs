@@ -15,13 +15,9 @@ import Control.Exception (throw)
 import Data.Bits
 import Data.List.Split (chunksOf)
 import Text.ParserCombinators.Parsec hiding (State, label)
-import Text.Printf
 
 bankSize :: Int
 bankSize = 16
-
-showHex :: Opcode -> String
-showHex opcode = printf "%04X" $ opcode .&. 0xFFFF
 
 -- Asserts the rendering flag.
 enableRendering :: State -> State
@@ -59,7 +55,7 @@ romTag = do
   n <- try $ string "INIT_" *> (fromInteger <$> hexadecimal)
   rom <- stateOpcodes <$> getState
   return $ showBank $ romBank rom n
-  where showBank = foldr (\opcode -> (++ showHex opcode)) ""
+  where showBank = foldr (\opcode -> (++ showHex 4 opcode)) ""
 
 -- Parses a 'INITP_kk' tag.
 romPTag :: CharParser State String
@@ -67,7 +63,7 @@ romPTag = do
   n <- try $ string "INITP_" *> (fromInteger <$> hexadecimal)
   rom <- stateOpcodes <$> getState
   return $ showBank $ romBankP rom n
-  where showBank = foldr (\opcode -> (++ showHex opcode)) ""
+  where showBank = foldr (\opcode -> (++ showHex 4 opcode)) ""
 
 -- Calculates the 'INIT_kk' ROM bank at the given index from the opcodes.
 romBank :: [Opcode] -> Int -> [Opcode]

@@ -3,9 +3,11 @@
 module Core where
 
 import Control.Exception (Exception)
-import Data.Typeable (Typeable)
+import Data.Bits
 import Data.Map (Map)
+import Data.Typeable (Typeable)
 import Data.Word (Word32)
+import Text.Printf
 
 type Identifier = String
 
@@ -110,3 +112,9 @@ isAssemblerError _ = False
 isTemplateError :: PbasmException -> Bool
 isTemplateError (TemplateException _) = True
 isTemplateError _ = False
+
+-- Prints the first n hexadecimal digits of the given opcode.
+showHex :: Int -> Opcode -> String
+showHex n opcode = printf format value
+  where format = "%0" ++ show n ++ "X"
+        value  = opcode .&. ((1 `shiftL` (n * 4)) - 1)
