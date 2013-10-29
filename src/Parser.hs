@@ -12,17 +12,19 @@ import Parser.Token
 
 import Control.Applicative hiding (many, optional, (<|>))
 import Control.Exception (throw)
-import Text.ParserCombinators.Parsec hiding (State, label)
+import Text.ParserCombinators.Parsec hiding (Parser, State, label)
+
+type Parser a = CharParser State a
 
 -- Parses a label and updates the label map.
-label :: CharParser State Identifier
+label :: Parser Identifier
 label = do
   l <- identifier <* colon
   updateState . addLabel $ l
   return l
 
 -- Parses a constant directive and updates the constant map.
-constantDirective :: CharParser State Statement
+constantDirective :: Parser Statement
 constantDirective = do
   d <- reserved "constant" *> (ConstantDirective <$> identifier <*> (comma *> value))
   updateState . addConstant $ d
@@ -41,11 +43,11 @@ binaryInstruction :: String -> CharParser u Statement
 binaryInstruction name = try $ reserved name *> (BinaryInstruction name <$> operand <*> (comma *> operand))
 
 -- Parses a directive.
-directive :: CharParser State Statement
+directive :: Parser Statement
 directive = constantDirective
 
 -- Parses an instruction and increments the program address.
-instruction :: CharParser State Statement
+instruction :: Parser Statement
 instruction = do
   i <- choice $ binaryInstructions ++ unaryInstructions ++ nullaryInstructions
   updateState incrementAddress
@@ -55,11 +57,11 @@ instruction = do
         binaryInstructions  = map binaryInstruction  binaryInstructionNames
 
 -- Parses a statement.
-statement :: CharParser State Statement
+statement :: Parser Statement
 statement = optional label *> (directive <|> instruction)
 
 -- Parses multiple statements.
-statements :: CharParser State ParserResult
+statements :: Parser ParserResult
 statements = whiteSpace *> ((,,) <$> many statement <*> constantMap <*> labelMap) <* eof
   where constantMap = stateConstantMap <$> getState
         labelMap    = stateLabelMap    <$> getState
