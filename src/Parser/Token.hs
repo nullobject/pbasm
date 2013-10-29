@@ -105,10 +105,15 @@ decimal = try $ toEnum <$> number 10 digit <* string "'" <* oneOf "dD" <* notFol
 binary :: (Enum a) => CharParser u a
 binary = try $ toEnum <$> number 2 binDigit <* string "'" <* oneOf "bB" <* notFollowedBy (identLetter psmDef)
 
+-- Parses an ASCII character.
+character :: (Enum a) => CharParser u a
+character = try $ toEnum . fromEnum <$> (between (char '"') (char '"' <?> "end of character") charLetter)
+  where charLetter = satisfy (\c -> (c /= '\'') && (c /= '\\') && (c > '\026'))
+
 -- Parses a value.
 value :: CharParser u Value
 value = (lexeme $ Value <$> integer) <?> "value"
-  where integer = hexadecimal <|> decimal <|> binary
+  where integer = hexadecimal <|> decimal <|> binary <|> character
 
 -- Parses a register name.
 register :: CharParser u Register
