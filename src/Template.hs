@@ -14,7 +14,9 @@ import Control.Applicative hiding (many, optional, (<|>))
 import Control.Exception (throw)
 import Data.Bits
 import Data.List.Split (chunksOf)
-import Text.ParserCombinators.Parsec hiding (State, label)
+import Text.ParserCombinators.Parsec hiding (Parser, State, label)
+
+type Parser a = CharParser State a
 
 bankSize :: Int
 bankSize = 16
@@ -24,33 +26,33 @@ enableRendering :: State -> State
 enableRendering state = state {stateRendering = True}
 
 -- Parses a template string.
-templateString :: CharParser State String
+templateString :: Parser String
 templateString = many1 $ noneOf "{}"
 
 -- Parses a tag.
-tag :: CharParser State String
+tag :: Parser String
 tag = try $ braces $ evalTag
   where braces = between (string "{") (string "}")
 
 -- Parses and evaluates the given tag using the parser state.
-evalTag :: CharParser State String
+evalTag :: Parser String
 evalTag = beginTemplateTag <|> nameTag <|> timestampTag <|> romTag <|> romPTag <|> unknownTag <?> "tag"
   where unknownTag = do {skipMany $ noneOf "{}"; return ""}
 
 -- Parses a 'begin template' tag.
-beginTemplateTag :: CharParser State String
+beginTemplateTag :: Parser String
 beginTemplateTag = try $ string "begin template" >> updateState enableRendering >> return ""
 
 -- Parses a 'name' tag.
-nameTag :: CharParser State String
+nameTag :: Parser String
 nameTag = try $ string "name" >> stateName <$> getState
 
 -- Parses a 'timestamp' tag.
-timestampTag :: CharParser State String
+timestampTag :: Parser String
 timestampTag = try $ string "timestamp" >> stateTimestamp <$> getState
 
 -- Parses a 'INIT_kk' tag.
-romTag :: CharParser State String
+romTag :: Parser String
 romTag = do
   n <- try $ string "INIT_" *> (fromInteger <$> hexadecimal)
   rom <- stateOpcodes <$> getState
@@ -58,7 +60,7 @@ romTag = do
   where showBank = foldr (\opcode -> (++ showHex 4 opcode)) ""
 
 -- Parses a 'INITP_kk' tag.
-romPTag :: CharParser State String
+romPTag :: Parser String
 romPTag = do
   n <- try $ string "INITP_" *> (fromInteger <$> hexadecimal)
   rom <- stateOpcodes <$> getState
@@ -85,11 +87,11 @@ chunksOf' n xs = map pad (chunksOf n xs)
   where pad ys = ys ++ (replicate (n - length ys) 0)
 
 -- Replaces the tags in the input string with their values.
-template :: CharParser State [String]
+template :: Parser [String]
 template = many $ ifRendering (tag <|> templateString)
 
 -- Applies the given parser only if the template is rendering.
-ifRendering :: CharParser State String -> CharParser State String
+ifRendering :: Parser String -> Parser String
 ifRendering p = do
   result <- p
   rendering <- stateRendering <$> getState
