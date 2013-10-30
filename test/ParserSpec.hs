@@ -37,7 +37,7 @@ spec = do
     it "parses a binary instruction with a register and an identifier operand" $ do
       parse statement "LOAD s0, foo"
         `shouldReturn`
-        BinaryInstruction "load" (RegisterOperand Register0) (IdentifierOperand "foo")
+        BinaryInstruction "load" (RegisterOperand Register0) (IdentifierOperand "foo" Nothing)
 
     it "parses a unary instruction with a value operand" $ do
       parse statement "CALL fff"
@@ -47,7 +47,7 @@ spec = do
     it "parses a unary instruction with an identifier operand" $ do
       parse statement "CALL foo"
         `shouldReturn`
-        UnaryInstruction "call" (IdentifierOperand "foo")
+        UnaryInstruction "call" (IdentifierOperand "foo" Nothing)
 
     it "parses a nullary instruction" $ do
       parse statement "RETURN"
@@ -61,7 +61,7 @@ spec = do
 
   describe "statements" $ do
     it "updates the label map" $ do
-      let instructions = [(UnaryInstruction "call" (IdentifierOperand "bar")), (NullaryInstruction "return")]
+      let instructions = [(UnaryInstruction "call" (IdentifierOperand "bar" Nothing)), (NullaryInstruction "return")]
       let labelMap = fromList [("foo", 0), ("bar", 1)]
 
       parse statements "foo: CALL bar\nbar: RETURN"
