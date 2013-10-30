@@ -34,6 +34,12 @@ spec = do
       fromRight (parse value "1'b") `shouldBe` 0x01
       fromRight (parse value "11111111'b") `shouldBe` 0xFF
 
+    it "parses an ASCII character" $ do
+      fromRight (parse value "\"A\"") `shouldBe` 0x41
+      fromRight (parse value "\"Z\"") `shouldBe` 0x5A
+      fromRight (parse value "\"a\"") `shouldBe` 0x61
+      fromRight (parse value "\"z\"") `shouldBe` 0x7A
+
     it "fails with an invalid value" $ do
       let result = show $ fromLeft $ parse value "lol"
       result `shouldContain` "expecting value"
