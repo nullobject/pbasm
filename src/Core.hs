@@ -48,9 +48,15 @@ readCondition s
   | s == "nc" = NotCarryCondition
   | otherwise = error $ "Unknown condition: " ++ s
 
+data Modifier
+  = InvertModifier -- ^ Invert the constant value.
+  | LowerModifier  -- ^ The lower 8-bits of the address value.
+  | UpperModifier  -- ^ The upper 4-bits of the address value.
+  deriving (Eq, Show)
+
 data Operand =
     ValueOperand      Value
-  | IdentifierOperand Identifier
+  | IdentifierOperand Identifier (Maybe Modifier)
   | RegisterOperand   Register
   | ConditionOperand  Condition
   deriving (Eq, Show)

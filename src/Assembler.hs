@@ -33,6 +33,16 @@ fromValue (Value c) = fromIntegral c
 fromRegister :: Register -> Word32
 fromRegister = fromIntegral . fromEnum
 
+lookupLabel :: Identifier -> AssemblerReader Word32
+lookupLabel identifier = do
+  labelMap <- asks stateLabelMap
+  return $ fromValue $ labelMap ! identifier
+
+lookupConstant :: Identifier -> AssemblerReader Word32
+lookupConstant identifier = do
+  constantMap <- asks stateConstantMap
+  return $ fromValue $ constantMap ! identifier
+
 -- Packs the given instruction into binary format.
 pack :: Word32 -> Operand -> Operand -> AssemblerReader (Maybe Opcode)
 
@@ -42,16 +52,29 @@ pack op (RegisterOperand x) (RegisterOperand y) =
 pack op (RegisterOperand x) (ValueOperand y) =
   return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromValue y)
 
-pack op (RegisterOperand x) (IdentifierOperand y) = do
-  constantMap <- asks stateConstantMap
-  return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromValue $ constantMap ! y)
+pack op (RegisterOperand x) (IdentifierOperand y modifier)
+  | modifier == Just InvertModifier = do
+    value <- lookupConstant y
+    return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (complement value .&. 0xFF)
+
+  | modifier == Just LowerModifier = do
+    value <- lookupLabel y
+    return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (value .&. 0xFF)
+
+  | modifier == Just UpperModifier = do
+    value <- lookupLabel y
+    return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. ((value `shiftR` 8) .&. 0xF)
+
+  | otherwise = do
+    value <- lookupConstant y
+    return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. value
 
 pack op (ValueOperand x) _ =
   return $ Just $ (op `shiftL` 12) .|. (fromValue x)
 
-pack op (IdentifierOperand x) _ = do
-  labelMap <- asks stateLabelMap
-  return $ Just $ (op `shiftL` 12) .|. (fromValue $ labelMap ! x)
+pack op (IdentifierOperand x _) _ = do
+  value <- lookupLabel x
+  return $ Just $ (op `shiftL` 12) .|. value
 
 pack _ _ _ = return Nothing
 

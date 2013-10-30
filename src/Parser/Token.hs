@@ -6,6 +6,7 @@ module Parser.Token
   , identifier
   , parens
   , reserved
+  , reservedOp
   , whiteSpace
 
     -- Primitive parsers
@@ -54,6 +55,7 @@ psmDef = emptyDef
   , Token.commentStart    = ""
   , Token.commentEnd      = ""
   , Token.commentLine     = ";"
+  , Token.identLetter     = alphaNum <|> char '_'
   , Token.nestedComments  = False
   , Token.reservedNames   = directiveNames ++ nullaryInstructionNames ++ unaryInstructionNames ++ binaryInstructionNames ++ conditionNames
   , Token.reservedOpNames = ["~"]
@@ -80,6 +82,9 @@ parens = Token.parens psm
 reserved :: String -> CharParser u ()
 reserved = Token.reserved psm
 
+reservedOp :: String -> CharParser u ()
+reservedOp = Token.reservedOp psm
+
 whiteSpace :: CharParser u ()
 whiteSpace = Token.whiteSpace psm
 
@@ -95,15 +100,15 @@ number base baseDigit = do
 
 -- Parses a hexadecimal number.
 hexadecimal :: (Enum a) => CharParser u a
-hexadecimal = try $ toEnum <$> number 16 hexDigit <* notFollowedBy (identLetter psmDef)
+hexadecimal = try $ toEnum <$> number 16 hexDigit <* notFollowedBy alphaNum
 
 -- Parses a decimal number.
 decimal :: (Enum a) => CharParser u a
-decimal = try $ toEnum <$> number 10 digit <* string "'" <* oneOf "dD" <* notFollowedBy (identLetter psmDef)
+decimal = try $ toEnum <$> number 10 digit <* char '\'' <* oneOf "dD"
 
 -- Parses a binary number.
 binary :: (Enum a) => CharParser u a
-binary = try $ toEnum <$> number 2 binDigit <* string "'" <* oneOf "bB" <* notFollowedBy (identLetter psmDef)
+binary = try $ toEnum <$> number 2 binDigit <* char '\'' <* oneOf "bB"
 
 -- Parses an ASCII character.
 character :: (Enum a) => CharParser u a
@@ -113,7 +118,7 @@ character = try $ toEnum . fromEnum <$> (between (char '"') (char '"' <?> "end o
 -- Parses a value.
 value :: CharParser u Value
 value = (lexeme $ Value <$> integer) <?> "value"
-  where integer = hexadecimal <|> decimal <|> binary <|> character
+  where integer = character <|> decimal <|> binary <|> hexadecimal
 
 -- Parses a register name.
 register :: CharParser u Register
@@ -131,7 +136,12 @@ condition = (lexeme $ readCondition <$> choice ps) <?> "condition"
 -- Parses an operand.
 operand :: CharParser u Operand
 operand = valueOperand <|> registerOperand <|> conditionOperand <|> identifierOperand <?> "operand"
-  where valueOperand      = ValueOperand      <$> value
-        identifierOperand = IdentifierOperand <$> identifier
-        registerOperand   = RegisterOperand   <$> (register <|> pointer)
-        conditionOperand  = ConditionOperand  <$> condition
+  where valueOperand      = ValueOperand     <$> value
+        registerOperand   = RegisterOperand  <$> (register <|> pointer)
+        conditionOperand  = ConditionOperand <$> condition
+        identifierOperand = invertedIdentifierOperand <|> upperIdentifierOperand <|> lowerIdentifierOperand <|> normalIdentifierOperand
+
+        normalIdentifierOperand   = (flip IdentifierOperand $ Nothing            ) <$> identifier
+        invertedIdentifierOperand = (flip IdentifierOperand $ Just InvertModifier) <$> (try $ reservedOp "~" *> identifier)
+        lowerIdentifierOperand    = (flip IdentifierOperand $ Just LowerModifier ) <$> (try $ identifier <* string "'lower")
+        upperIdentifierOperand    = (flip IdentifierOperand $ Just UpperModifier ) <$> (try $ identifier <* string "'upper")

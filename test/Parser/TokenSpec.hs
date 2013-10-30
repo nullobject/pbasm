@@ -74,7 +74,16 @@ spec = do
 
   describe "operand" $ do
     it "parses a identifier operand" $ do
-      fromRight (parse operand "foo") `shouldBe` IdentifierOperand "foo"
+      fromRight (parse operand "foo") `shouldBe` IdentifierOperand "foo" Nothing
+
+    it "parses a inverted identifier operand" $ do
+      fromRight (parse operand "~foo") `shouldBe` IdentifierOperand "foo" (Just InvertModifier)
+
+    it "parses a lower identifier operand" $ do
+      fromRight (parse operand "foo'lower") `shouldBe` IdentifierOperand "foo" (Just LowerModifier)
+
+    it "parses a upper identifier operand" $ do
+      fromRight (parse operand "foo'upper") `shouldBe` IdentifierOperand "foo" (Just UpperModifier)
 
     it "parses a register operand" $ do
       fromRight (parse operand "s0") `shouldBe` RegisterOperand Register0
