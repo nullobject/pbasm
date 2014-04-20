@@ -2,6 +2,11 @@
 
 This project implements an assembler for the PicoBlaze (KCPSM6) microcontroller in the Haskell programming language.
 
+## Building
+
+    > cabal install --enable-tests --only-dependencies
+    > cabal build && cabal test
+
 ## References
 
 * [Xilinx PicoBlaze](http://www.xilinx.com/products/intellectual-property/picoblaze.htm)
