@@ -1,7 +1,10 @@
+.PHONY: build clean test
+
 build:
 	@cabal build
 
-test:
-	@cabal test -j --show-details=always
+clean:
+	@cabal clean
 
-.PHONY: test
+test:
+	@cabal test -j --show-details=always --test-option=--color
