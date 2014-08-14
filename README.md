@@ -4,8 +4,8 @@ This project implements an assembler for the PicoBlaze (KCPSM6) microcontroller 
 
 ## Building
 
-    > cabal install --enable-tests --only-dependencies
-    > cabal build && cabal test
+    > cabal configure --enable-tests
+    > make test
 
 ## References
 
