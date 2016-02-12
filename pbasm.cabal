@@ -14,7 +14,7 @@ executable pbasm
   ghc-options:      -Wall -Werror
   hs-source-dirs:   src
   main-is:          Main.hs
-  build-depends:    base >= 4.6 && < 4.8
+  build-depends:    base >= 4.7 && < 5
                   , cmdargs
                   , containers
                   , filepath
@@ -27,7 +27,7 @@ test-suite spec
   type:             exitcode-stdio-1.0
   hs-source-dirs:   src, test
   main-is:          Spec.hs
-  build-depends:    base >= 4.6 && < 4.8
+  build-depends:    base >= 4.7 && < 5
                   , containers
                   , hspec
                   , mtl

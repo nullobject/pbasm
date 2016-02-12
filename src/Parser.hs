@@ -10,7 +10,6 @@ import Core
 import Parser.State
 import Parser.Token
 
-import Control.Applicative hiding (many, optional, (<|>))
 import Control.Exception (throw)
 import Text.ParserCombinators.Parsec hiding (Parser, State, label)
 

@@ -10,7 +10,6 @@ import Core
 import Parser.Token (hexadecimal)
 import Template.State
 
-import Control.Applicative hiding (many, optional, (<|>))
 import Control.Exception (throw)
 import Data.Bits
 import Data.List.Split (chunksOf)

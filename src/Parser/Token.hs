@@ -27,7 +27,6 @@ module Parser.Token
 
 import Core
 
-import Control.Applicative hiding (many, optional, (<|>))
 import Data.Char (digitToInt)
 import Text.ParserCombinators.Parsec hiding (label)
 import Text.ParserCombinators.Parsec.Language
