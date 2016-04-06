@@ -1,19 +1,19 @@
 -- This module defines the template which converts a template into a PicoBlaze
 -- ROM file.
-module Template
-  ( State (..)
+module Language.Pbasm.Template
+  ( State(..)
   , templateState
   , runTemplate
   ) where
-
-import Core
-import Parser.Token (hexadecimal)
-import Template.State
 
 import Control.Exception (throw)
 import Data.Bits
 import Data.List.Split (chunksOf)
 import Text.ParserCombinators.Parsec hiding (Parser, State, label)
+
+import Language.Pbasm.Core
+import Language.Pbasm.Parser.Token (hexadecimal)
+import Language.Pbasm.Template.State
 
 type Parser a = CharParser State a
 

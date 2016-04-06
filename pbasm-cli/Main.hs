@@ -1,13 +1,13 @@
 module Main where
 
-import Assembler
-import Core
-import CLI
-import Parser
-import Template
-
+import Language.Pbasm.Assembler
+import Language.Pbasm.Core
+import Language.Pbasm.Parser
+import Language.Pbasm.Template
 import System.Console.CmdArgs hiding (args, name)
 import System.FilePath
+
+import CLI
 
 main :: IO ()
 main = do

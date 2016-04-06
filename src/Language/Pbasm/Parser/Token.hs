@@ -1,5 +1,5 @@
 -- This module defines the primitive token parsers.
-module Parser.Token
+module Language.Pbasm.Parser.Token
     -- Token parsers
   ( colon
   , comma
@@ -25,13 +25,13 @@ module Parser.Token
   , binaryInstructionNames
   ) where
 
-import Core
-
 import Data.Char (digitToInt)
 import Text.ParserCombinators.Parsec hiding (label)
 import Text.ParserCombinators.Parsec.Language
 import Text.ParserCombinators.Parsec.Token (TokenParser)
 import qualified Text.ParserCombinators.Parsec.Token as Token
+
+import Language.Pbasm.Core
 
 directiveNames :: [String]
 directiveNames = ["constant", "string", "table", "address", "include"]

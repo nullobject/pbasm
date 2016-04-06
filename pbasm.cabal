@@ -1,35 +1,68 @@
 name:          pbasm
-version:       0.1.0
-synopsis:      This project implements an assembler for the PicoBlaze (KCPSM6) microcontroller in the Haskell programming language.
+version:       0.1.1
+synopsis:      An assembler for the PicoBlaze (KCPSM6) microcontroller in the Haskell programming language.
 homepage:      https://github.com/nullobject/pbasm
-license:       BSD3
+license:       MIT
 license-file:  LICENSE
 author:        Josh Bassett
 maintainer:    josh.bassett@gmail.com
 build-type:    Simple
-cabal-version: >=1.10
+cabal-version: >= 1.10
+
+library
+  ghc-options: -Wall -Werror
+  hs-source-dirs: src
+  default-language: Haskell2010
+
+  exposed-modules:
+      Language.Pbasm.Assembler
+      Language.Pbasm.Core
+      Language.Pbasm.Parser
+      Language.Pbasm.Parser.State
+      Language.Pbasm.Parser.Token
+      Language.Pbasm.Template
+      Language.Pbasm.Template.State
+
+  build-depends:
+      base >= 4.8 && < 5
+    , containers
+    , mtl
+    , parsec
+    , split
 
 executable pbasm
+  ghc-options: -Wall -Werror
+  hs-source-dirs: pbasm-cli
+  main-is: Main.hs
   default-language: Haskell2010
-  ghc-options:      -Wall -Werror
-  hs-source-dirs:   src
-  main-is:          Main.hs
-  build-depends:    base >= 4.7 && < 5
-                  , cmdargs
-                  , containers
-                  , filepath
-                  , mtl
-                  , parsec
-                  , split
+
+  other-modules:
+      CLI
+
+  build-depends:
+      base >= 4.8 && < 5
+    , cmdargs
+    , filepath
+    , pbasm
 
 test-suite spec
+  type: exitcode-stdio-1.0
+  ghc-options: -Wall -Werror
+  hs-source-dirs: test
+  main-is: Spec.hs
   default-language: Haskell2010
-  type:             exitcode-stdio-1.0
-  hs-source-dirs:   src, test
-  main-is:          Spec.hs
-  build-depends:    base >= 4.7 && < 5
-                  , containers
-                  , hspec
-                  , mtl
-                  , parsec
-                  , split
+
+  other-modules:
+      Language.Pbasm.AssemblerSpec
+      Language.Pbasm.Parser.StateSpec
+      Language.Pbasm.Parser.TokenSpec
+      Language.Pbasm.ParserSpec
+      Language.Pbasm.Template.StateSpec
+      Language.Pbasm.TemplateSpec
+
+  build-depends:
+      base >= 4.8 && < 5
+    , containers
+    , hspec
+    , parsec
+    , pbasm

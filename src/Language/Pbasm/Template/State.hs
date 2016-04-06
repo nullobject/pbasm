@@ -1,9 +1,9 @@
-module Template.State
-  ( State (..)
+module Language.Pbasm.Template.State
+  ( State(..)
   , templateState
   ) where
 
-import Core
+import Language.Pbasm.Core
 
 data State = State
   { stateName      :: String   -- ^ Template name

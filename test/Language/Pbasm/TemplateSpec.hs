@@ -1,8 +1,8 @@
-module TemplateSpec where
-
-import Template
+module Language.Pbasm.TemplateSpec where
 
 import Test.Hspec
+
+import Language.Pbasm.Template
 
 main :: IO ()
 main = hspec spec

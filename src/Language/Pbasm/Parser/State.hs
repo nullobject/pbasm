@@ -1,15 +1,15 @@
 -- This module defines the parser state.
-module Parser.State
-  ( State (..)
+module Language.Pbasm.Parser.State
+  ( State(..)
   , parserState
   , addConstant
   , addLabel
   , incrementAddress
   ) where
 
-import Core
-
 import Data.Map (empty, insert)
+
+import Language.Pbasm.Core
 
 data State = State
   { stateAddress     :: Value

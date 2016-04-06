@@ -1,18 +1,18 @@
 -- This module defines the assember which is used to transform an AST into
 -- machine code.
-module Assembler
-  ( State (..)
+module Language.Pbasm.Assembler
+  ( State(..)
   , assemblerState
   , runAssembler
   ) where
-
-import Core
 
 import Control.Monad.Reader
 import Data.Bits
 import Data.Map ((!), empty)
 import Data.Maybe
 import Data.Word
+
+import Language.Pbasm.Core
 
 data State = State
   { stateLabelMap    :: LabelMap

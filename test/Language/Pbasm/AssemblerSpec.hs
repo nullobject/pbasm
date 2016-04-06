@@ -1,11 +1,10 @@
-module AssemblerSpec where
-
-import Assembler
-import Core
+module Language.Pbasm.AssemblerSpec where
 
 import Data.Map (empty, fromList)
 import Test.Hspec
-import Text.ParserCombinators.Parsec (runParser)
+
+import Language.Pbasm.Assembler
+import Language.Pbasm.Core
 
 main :: IO ()
 main = hspec spec

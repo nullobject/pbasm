@@ -1,10 +1,10 @@
-module Parser.StateSpec where
-
-import Core
-import Parser.State
+module Language.Pbasm.Parser.StateSpec where
 
 import Data.Map (empty, fromList)
 import Test.Hspec
+
+import Language.Pbasm.Core
+import Language.Pbasm.Parser.State
 
 main :: IO ()
 main = hspec spec

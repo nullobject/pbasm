@@ -1,17 +1,18 @@
 -- This module defines the parser which is used to parse the assembly source
 -- code into an AST.
-module Parser
-  ( statement
+module Language.Pbasm.Parser
+  ( Parser
+  , statement
   , statements
   , parsePsmFile
   ) where
 
-import Core
-import Parser.State
-import Parser.Token
-
 import Control.Exception (throw)
 import Text.ParserCombinators.Parsec hiding (Parser, State, label)
+
+import Language.Pbasm.Core
+import Language.Pbasm.Parser.State
+import Language.Pbasm.Parser.Token
 
 type Parser a = CharParser State a
 

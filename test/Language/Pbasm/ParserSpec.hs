@@ -1,14 +1,15 @@
-module ParserSpec where
-
-import Core
-import Parser
-import Parser.State (parserState)
+module Language.Pbasm.ParserSpec where
 
 import Control.Exception (throw)
 import Data.Map (empty, fromList)
 import Test.Hspec
-import Text.ParserCombinators.Parsec (runParser)
+import Text.ParserCombinators.Parsec (CharParser, runParser)
 
+import Language.Pbasm.Core
+import Language.Pbasm.Parser
+import Language.Pbasm.Parser.State (State, parserState)
+
+parse :: CharParser State a -> [Char] -> IO a
 parse p input = case runParser p parserState "" input of
   Right x -> return x
   Left e  -> throw $ ParserException $ show e

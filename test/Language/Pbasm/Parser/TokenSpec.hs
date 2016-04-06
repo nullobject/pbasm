@@ -1,10 +1,11 @@
-module Parser.TokenSpec where
-
-import Core
-import Parser.Token
+module Language.Pbasm.Parser.TokenSpec where
 
 import Test.Hspec
-import Text.ParserCombinators.Parsec (runParser)
+import Text.Parsec.Error (ParseError)
+import Text.ParserCombinators.Parsec (CharParser, runParser)
+
+import Language.Pbasm.Core
+import Language.Pbasm.Parser.Token
 
 fromRight :: (Show a) => Either a b -> b
 fromRight (Right x) = x
@@ -14,6 +15,7 @@ fromLeft :: (Show b) => Either a b -> a
 fromLeft (Left x) = x
 fromLeft (Right err) = error $ "no left value" ++ show err
 
+parse :: CharParser [Char] a -> [Char] -> Either ParseError a
 parse p input = runParser p "" "" input
 
 main :: IO ()

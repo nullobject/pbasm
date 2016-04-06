@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module Core where
+module Language.Pbasm.Core where
 
 import Control.Exception (Exception)
 import Data.Bits
