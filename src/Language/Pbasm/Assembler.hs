@@ -162,6 +162,8 @@ assemble (BinaryInstruction "jump" (ConditionOperand x) y)
 -- Subroutines
 assemble (UnaryInstruction "call" x)   = pack1 0x20 x
 assemble (NullaryInstruction "return") = pack0 0x25
+assemble (UnaryInstruction "return" (ConditionOperand x))
+  | x == ZeroCondition = pack0 0x31
 
 -- Default
 assemble _ = return Nothing

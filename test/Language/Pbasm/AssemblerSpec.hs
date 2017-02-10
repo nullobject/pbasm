@@ -186,6 +186,9 @@ spec = do
       it "assembles a 'RETURN' instruction" $ do
         assemble (NullaryInstruction "return") `shouldReturn` [0x25000]
 
+      it "assembles a 'RETURN Z' instruction" $ do
+        assemble (UnaryInstruction "return" (ConditionOperand ZeroCondition)) `shouldReturn` [0x31000]
+
     it "ignores unknown statements" $ do
       assemble (NullaryInstruction "lol") `shouldReturn` []
 
