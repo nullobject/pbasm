@@ -199,6 +199,9 @@ spec = do
       it "assembles a 'JUMP NC, aaa' instruction" $ do
         assemble (BinaryInstruction "jump" (ConditionOperand NotCarryCondition) (ValueOperand 0xFFF)) `shouldReturn` [0x3EFFF]
 
+      it "assembles a 'JUMP@ (sX, sY)' instruction" $ do
+        assemble (BinaryInstruction "jump@" (ValueOperand 0xF) (ValueOperand 0xF)) `shouldReturn` [0x26FF0]
+
     context "subroutines" $ do
       it "assembles a 'CALL aaa' instruction" $ do
         assemble (UnaryInstruction "call" (ValueOperand 0xFFF)) `shouldReturn` [0x20FFF]
