@@ -141,6 +141,7 @@ assemble (BinaryInstruction "fetch" x y)                     = pack2 0x0B x y
 -- Interrupt Handling
 assemble (NullaryInstruction "disable interrupt") = return $ Just 0x28000
 assemble (NullaryInstruction "enable interrupt")  = return $ Just 0x28001
+assemble (NullaryInstruction "returni disable")   = return $ Just 0x29000
 
 -- Shift and rotate
 assemble (UnaryInstruction "sl0" x) = pack2 0x14 x (ValueOperand 0x06)
