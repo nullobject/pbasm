@@ -47,11 +47,11 @@ spec = do
       result `shouldContain` "expecting value"
 
   describe "register" $ do
-    it "parses a register name" $ do
+    it "parses a register" $ do
       fromRight (parse register "s0") `shouldBe` Register0
       fromRight (parse register "S0") `shouldBe` Register0
 
-    it "fails with an invalid register name" $ do
+    it "fails with an invalid register" $ do
       let result = show $ fromLeft $ parse register "sz"
       result `shouldContain` "expecting register"
 

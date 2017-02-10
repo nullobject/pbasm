@@ -30,7 +30,7 @@ spec = do
         `shouldReturn`
         BinaryInstruction "load" (RegisterOperand Register0) (RegisterOperand Register1)
 
-    it "parses a binary instruction with a dereferenced register operand" $ do
+    it "parses a binary instruction with a pointer operand" $ do
       parse statement "INPUT s0, (s1)"
         `shouldReturn`
         BinaryInstruction "input" (RegisterOperand Register0) (RegisterOperand Register1)
@@ -54,6 +54,11 @@ spec = do
       parse statement "CALL foo"
         `shouldReturn`
         UnaryInstruction "call" (IdentifierOperand "foo" Nothing)
+
+    it "parses a unary instruction with a condition operand" $ do
+      parse statement "CALL Z, fff"
+        `shouldReturn`
+        BinaryInstruction "call" (ConditionOperand ZeroCondition) (ValueOperand 0xFFF)
 
     it "parses a nullary instruction" $ do
       parse statement "RETURN"
