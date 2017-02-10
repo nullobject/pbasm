@@ -165,6 +165,7 @@ assemble (NullaryInstruction "return") = pack0 0x25
 assemble (UnaryInstruction "return" (ConditionOperand x))
   | x == ZeroCondition    = pack0 0x31
   | x == NotZeroCondition = pack0 0x35
+  | x == CarryCondition   = pack0 0x39
 
 -- Default
 assemble _ = return Nothing
