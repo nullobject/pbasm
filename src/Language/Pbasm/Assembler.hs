@@ -133,6 +133,10 @@ assemble (BinaryInstruction "output"  x y@(RegisterOperand _)) = pack2 0x2C x y
 assemble (BinaryInstruction "output"  x y)                     = pack2 0x2D x y
 assemble (BinaryInstruction "outputk" x y)                     = pack2 0x2B x y
 
+-- Scratch Pad Memory
+assemble (BinaryInstruction "store" x y@(RegisterOperand _)) = pack2 0x2E x y
+assemble (BinaryInstruction "store" x y)                     = pack2 0x2F x y
+
 -- Shift and rotate
 assemble (UnaryInstruction "sl0" x) = pack2 0x14 x (ValueOperand 0x06)
 assemble (UnaryInstruction "sl1" x) = pack2 0x14 x (ValueOperand 0x07)

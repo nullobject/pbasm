@@ -119,6 +119,13 @@ spec = do
       it "assembles a 'OUTPUTK kk, p instruction" $ do
         assemble (BinaryInstruction "outputk" (ValueOperand 0xFF) (ValueOperand 0xF)) `shouldReturn` [0x2BFFF]
 
+    context "scratch pad memory" $ do
+      it "assembles a STORE sX, (sY)' instruction" $ do
+        assemble (BinaryInstruction "store" (RegisterOperand Register2) (RegisterOperand Register1)) `shouldReturn` [0x2E210]
+
+      it "assembles a STORE sX, sY' instruction" $ do
+        assemble (BinaryInstruction "store" (RegisterOperand Register2) (ValueOperand 0xFF)) `shouldReturn` [0x2F2FF]
+
     context "shift and rotate" $ do
       it "assembles a 'SL0 sX' instruction" $ do
         assemble (UnaryInstruction "sl0" (RegisterOperand Register0)) `shouldReturn` [0x14006]
