@@ -165,13 +165,16 @@ assemble (BinaryInstruction "jump" (ConditionOperand x) y)
   | x == NotCarryCondition = pack1 0x3E y
 
 -- Subroutines
-assemble (UnaryInstruction "call" x)   = pack1 0x20 x
+assemble (UnaryInstruction "call" x) = pack1 0x20 x
+
 assemble (NullaryInstruction "return") = return $ Just 0x25000
 assemble (UnaryInstruction "return" (ConditionOperand x))
   | x == ZeroCondition     = return $ Just 0x31000
   | x == NotZeroCondition  = return $ Just 0x35000
   | x == CarryCondition    = return $ Just 0x39000
   | x == NotCarryCondition = return $ Just 0x3D000
+
+assemble (BinaryInstruction "load&return" x y) = pack2 0x21 x y
 
 -- Default
 assemble _ = return Nothing

@@ -212,11 +212,14 @@ spec = do
       it "assembles a 'RETURN NZ' instruction" $ do
         assemble (UnaryInstruction "return" (ConditionOperand NotZeroCondition)) `shouldReturn` [0x35000]
 
-      it "assembles a 'RETURN C instruction" $ do
+      it "assembles a 'RETURN C' instruction" $ do
         assemble (UnaryInstruction "return" (ConditionOperand CarryCondition)) `shouldReturn` [0x39000]
 
-      it "assembles a 'RETURN NC instruction" $ do
+      it "assembles a 'RETURN NC' instruction" $ do
         assemble (UnaryInstruction "return" (ConditionOperand NotCarryCondition)) `shouldReturn` [0x3D000]
+
+      it "assembles a 'LOAD&RETURN sX, kk instruction" $ do
+        assemble (BinaryInstruction "load&return" (RegisterOperand Register0) (ValueOperand 0xFF)) `shouldReturn` [0x210FF]
 
     it "ignores unknown statements" $ do
       assemble (NullaryInstruction "lol") `shouldReturn` []
