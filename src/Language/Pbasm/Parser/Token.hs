@@ -37,13 +37,13 @@ directiveNames :: [String]
 directiveNames = ["constant", "string", "table", "address", "include"]
 
 nullaryInstructionNames :: [String]
-nullaryInstructionNames = ["return"]
+nullaryInstructionNames = ["regbank a", "regbank b", "enable interrupt", "disable interrupt", "returni disable", "returni enable", "return"]
 
 unaryInstructionNames :: [String]
-unaryInstructionNames = ["sl0", "sl1", "slx", "sla", "rl", "sr0", "sr1", "srx", "sra", "rr", "call", "jump"]
+unaryInstructionNames = ["sl0", "sl1", "slx", "sla", "rl", "sr0", "sr1", "srx", "sra", "rr", "jump", "call"]
 
 binaryInstructionNames :: [String]
-binaryInstructionNames = ["load", "and", "or", "xor", "add", "addcy", "sub", "subcy", "test", "testcy", "compare", "comparecy", "input", "output", "jump"]
+binaryInstructionNames = ["load", "star", "and", "or", "xor", "add", "addcy", "sub", "subcy", "test", "testcy", "compare", "comparecy", "input", "output", "outputk", "store", "fetch", "jump", "jump@", "call", "call@", "load&return"]
 
 conditionNames :: [String]
 conditionNames = ["z", "nz", "c", "nc"]
