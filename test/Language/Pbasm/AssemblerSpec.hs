@@ -107,6 +107,9 @@ spec = do
       it "assembles a 'REGBANK A' instruction" $ do
         assemble (NullaryInstruction "regbank a") `shouldReturn` [0x37000]
 
+      it "assembles a 'REGBANK B' instruction" $ do
+        assemble (NullaryInstruction "regbank b") `shouldReturn` [0x37001]
+
     context "input and output" $ do
       it "assembles a 'INPUT sX, (sY)' instruction" $ do
         assemble (BinaryInstruction "input" (RegisterOperand Register0) (RegisterOperand Register0)) `shouldReturn` [0x08000]
