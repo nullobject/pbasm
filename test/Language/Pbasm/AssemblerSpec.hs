@@ -139,6 +139,10 @@ spec = do
       it "assembles a FETCH sX, sY' instruction" $ do
         assemble (BinaryInstruction "fetch" (RegisterOperand Register2) (ValueOperand 0xFF)) `shouldReturn` [0x0B2FF]
 
+    context "interrupt handling" $ do
+      it "assembles a 'DISABLE INTERRUPT' instruction" $ do
+        assemble (NullaryInstruction "disable interrupt") `shouldReturn` [0x28000]
+
     context "shift and rotate" $ do
       it "assembles a 'SL0 sX' instruction" $ do
         assemble (UnaryInstruction "sl0" (RegisterOperand Register0)) `shouldReturn` [0x14006]

@@ -138,6 +138,9 @@ assemble (BinaryInstruction "store" x y)                     = pack2 0x2F x y
 assemble (BinaryInstruction "fetch" x y@(RegisterOperand _)) = pack2 0x0A x y
 assemble (BinaryInstruction "fetch" x y)                     = pack2 0x0B x y
 
+-- Interrupt Handling
+assemble (NullaryInstruction "disable interrupt") = return $ Just 0x28000
+
 -- Shift and rotate
 assemble (UnaryInstruction "sl0" x) = pack2 0x14 x (ValueOperand 0x06)
 assemble (UnaryInstruction "sl1" x) = pack2 0x14 x (ValueOperand 0x07)
