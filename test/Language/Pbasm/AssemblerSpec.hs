@@ -149,6 +149,9 @@ spec = do
       it "assembles a 'RETURNI DISABLE instruction" $ do
         assemble (NullaryInstruction "returni disable") `shouldReturn` [0x29000]
 
+      it "assembles a 'RETURNI ENABLE instruction" $ do
+        assemble (NullaryInstruction "returni enable") `shouldReturn` [0x29001]
+
     context "shift and rotate" $ do
       it "assembles a 'SL0 sX' instruction" $ do
         assemble (UnaryInstruction "sl0" (RegisterOperand Register0)) `shouldReturn` [0x14006]
