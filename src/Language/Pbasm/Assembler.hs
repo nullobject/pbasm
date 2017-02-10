@@ -172,6 +172,9 @@ assemble (BinaryInstruction "call" (ConditionOperand x) y)
   | x == CarryCondition    = pack1 0x38 y
   | x == NotCarryCondition = pack1 0x3C y
 
+assemble (BinaryInstruction "call@" (ValueOperand x) (ValueOperand y)) =
+  return $ Just $ (0x24 `shiftL` 12) .|. ((fromValue x .&. 0xF) `shiftL` 8) .|. ((fromValue y .&. 0xF) `shiftL` 4)
+
 assemble (NullaryInstruction "return") = return $ Just 0x25000
 assemble (UnaryInstruction "return" (ConditionOperand x))
   | x == ZeroCondition     = return $ Just 0x31000
