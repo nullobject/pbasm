@@ -93,6 +93,9 @@ assemble :: Statement -> AssemblerReader (Maybe Opcode)
 assemble (BinaryInstruction "load" x y@(RegisterOperand _)) = pack2 0x00 x y
 assemble (BinaryInstruction "load" x y)                     = pack2 0x01 x y
 
+assemble (BinaryInstruction "star" (RegisterOperand x) (RegisterOperand y)) =
+  return $ Just $ (0x16 `shiftL` 12) .|. ((fromRegister x .&. 0xF) `shiftL` 8) .|. ((fromRegister y .&. 0xF) `shiftL` 4)
+
 -- Logical
 assemble (BinaryInstruction "and" x y@(RegisterOperand _)) = pack2 0x02 x y
 assemble (BinaryInstruction "and" x y)                     = pack2 0x03 x y

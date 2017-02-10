@@ -34,6 +34,9 @@ spec = do
       it "assembles a 'LOAD sX, kk' instruction" $ do
         assemble (BinaryInstruction "load" (RegisterOperand Register0) (ValueOperand 0xFF)) `shouldReturn` [0x010FF]
 
+      it "assembles a STAR sX, sY' instruction" $ do
+        assemble (BinaryInstruction "star" (RegisterOperand Register0) (RegisterOperand Register1)) `shouldReturn` [0x16010]
+
     context "logical" $ do
       it "assembles a 'AND sX, sY' instruction" $ do
         assemble (BinaryInstruction "and" (RegisterOperand Register0) (RegisterOperand Register1)) `shouldReturn` [0x02010]
