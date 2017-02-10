@@ -12,7 +12,7 @@ main = hspec spec
 spec :: Spec
 spec = do
   describe "assemblerState" $ do
-    it "parses returns an empty assembler state" $ do
+    it "returns an empty assembler state" $ do
       assemblerState
         `shouldBe`
         State { stateLabelMap    = empty
@@ -33,6 +33,9 @@ spec = do
 
       it "assembles a 'LOAD sX, kk' instruction" $ do
         assemble (BinaryInstruction "load" (RegisterOperand Register0) (ValueOperand 0xFF)) `shouldReturn` [0x010FF]
+
+      it "assembles a STAR sX, sY' instruction" $ do
+        assemble (BinaryInstruction "star" (RegisterOperand Register0) (RegisterOperand Register1)) `shouldReturn` [0x16010]
 
     context "logical" $ do
       it "assembles a 'AND sX, sY' instruction" $ do
@@ -103,6 +106,13 @@ spec = do
       it "assembles a 'COMPARECY sX, kk' instruction" $ do
         assemble (BinaryInstruction "comparecy" (RegisterOperand Register0) (ValueOperand 0xFF)) `shouldReturn` [0x1F0FF]
 
+    context "register bank selection" $ do
+      it "assembles a 'REGBANK A' instruction" $ do
+        assemble (NullaryInstruction "regbank a") `shouldReturn` [0x37000]
+
+      it "assembles a 'REGBANK B' instruction" $ do
+        assemble (NullaryInstruction "regbank b") `shouldReturn` [0x37001]
+
     context "input and output" $ do
       it "assembles a 'INPUT sX, (sY)' instruction" $ do
         assemble (BinaryInstruction "input" (RegisterOperand Register0) (RegisterOperand Register0)) `shouldReturn` [0x08000]
@@ -115,6 +125,35 @@ spec = do
 
       it "assembles a 'OUTPUT sX, pp' instruction" $ do
         assemble (BinaryInstruction "output" (RegisterOperand Register0) (ValueOperand 0xFF)) `shouldReturn` [0x2D0FF]
+
+      it "assembles a 'OUTPUTK kk, p instruction" $ do
+        assemble (BinaryInstruction "outputk" (ValueOperand 0xFF) (ValueOperand 0xF)) `shouldReturn` [0x2BFFF]
+
+    context "scratch pad memory" $ do
+      it "assembles a STORE sX, (sY)' instruction" $ do
+        assemble (BinaryInstruction "store" (RegisterOperand Register2) (RegisterOperand Register1)) `shouldReturn` [0x2E210]
+
+      it "assembles a STORE sX, sY' instruction" $ do
+        assemble (BinaryInstruction "store" (RegisterOperand Register2) (ValueOperand 0xFF)) `shouldReturn` [0x2F2FF]
+
+      it "assembles a FETCH sX, (sY)' instruction" $ do
+        assemble (BinaryInstruction "fetch" (RegisterOperand Register2) (RegisterOperand Register1)) `shouldReturn` [0x0A210]
+
+      it "assembles a FETCH sX, sY' instruction" $ do
+        assemble (BinaryInstruction "fetch" (RegisterOperand Register2) (ValueOperand 0xFF)) `shouldReturn` [0x0B2FF]
+
+    context "interrupt handling" $ do
+      it "assembles a 'DISABLE INTERRUPT' instruction" $ do
+        assemble (NullaryInstruction "disable interrupt") `shouldReturn` [0x28000]
+
+      it "assembles a 'ENABLE INTERRUPT' instruction" $ do
+        assemble (NullaryInstruction "enable interrupt") `shouldReturn` [0x28001]
+
+      it "assembles a 'RETURNI DISABLE instruction" $ do
+        assemble (NullaryInstruction "returni disable") `shouldReturn` [0x29000]
+
+      it "assembles a 'RETURNI ENABLE instruction" $ do
+        assemble (NullaryInstruction "returni enable") `shouldReturn` [0x29001]
 
     context "shift and rotate" $ do
       it "assembles a 'SL0 sX' instruction" $ do
@@ -163,12 +202,45 @@ spec = do
       it "assembles a 'JUMP NC, aaa' instruction" $ do
         assemble (BinaryInstruction "jump" (ConditionOperand NotCarryCondition) (ValueOperand 0xFFF)) `shouldReturn` [0x3EFFF]
 
+      it "assembles a 'JUMP@ (sX, sY)' instruction" $ do
+        assemble (BinaryInstruction "jump@" (RegisterOperand Register0) (RegisterOperand Register1)) `shouldReturn` [0x26010]
+
     context "subroutines" $ do
       it "assembles a 'CALL aaa' instruction" $ do
         assemble (UnaryInstruction "call" (ValueOperand 0xFFF)) `shouldReturn` [0x20FFF]
 
+      it "assembles a 'CALL Z, aaa' instruction" $ do
+        assemble (BinaryInstruction "call" (ConditionOperand ZeroCondition) (ValueOperand 0xFFF)) `shouldReturn` [0x30FFF]
+
+      it "assembles a 'CALL NZ, aaa' instruction" $ do
+        assemble (BinaryInstruction "call" (ConditionOperand NotZeroCondition) (ValueOperand 0xFFF)) `shouldReturn` [0x34FFF]
+
+      it "assembles a 'CALL C, aaa' instruction" $ do
+        assemble (BinaryInstruction "call" (ConditionOperand CarryCondition) (ValueOperand 0xFFF)) `shouldReturn` [0x38FFF]
+
+      it "assembles a 'CALL NC, aaa' instruction" $ do
+        assemble (BinaryInstruction "call" (ConditionOperand NotCarryCondition) (ValueOperand 0xFFF)) `shouldReturn` [0x3CFFF]
+
+      it "assembles a 'CALL@ (sX, sY)' instruction" $ do
+        assemble (BinaryInstruction "call@" (RegisterOperand Register0) (RegisterOperand Register1)) `shouldReturn` [0x24010]
+
       it "assembles a 'RETURN' instruction" $ do
         assemble (NullaryInstruction "return") `shouldReturn` [0x25000]
+
+      it "assembles a 'RETURN Z' instruction" $ do
+        assemble (UnaryInstruction "return" (ConditionOperand ZeroCondition)) `shouldReturn` [0x31000]
+
+      it "assembles a 'RETURN NZ' instruction" $ do
+        assemble (UnaryInstruction "return" (ConditionOperand NotZeroCondition)) `shouldReturn` [0x35000]
+
+      it "assembles a 'RETURN C' instruction" $ do
+        assemble (UnaryInstruction "return" (ConditionOperand CarryCondition)) `shouldReturn` [0x39000]
+
+      it "assembles a 'RETURN NC' instruction" $ do
+        assemble (UnaryInstruction "return" (ConditionOperand NotCarryCondition)) `shouldReturn` [0x3D000]
+
+      it "assembles a 'LOAD&RETURN sX, kk instruction" $ do
+        assemble (BinaryInstruction "load&return" (RegisterOperand Register0) (ValueOperand 0xFF)) `shouldReturn` [0x210FF]
 
     it "ignores unknown statements" $ do
       assemble (NullaryInstruction "lol") `shouldReturn` []
