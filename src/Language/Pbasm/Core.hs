@@ -20,10 +20,10 @@ instance Num Value where
   (Value x) + (Value y) = Value (x + y)
   (Value x) - (Value y) = Value (x - y)
   (Value x) * (Value y) = Value (x * y)
-  abs x                         = x
-  signum 0                      = 0
-  signum _                      = 1
-  fromInteger i                 = Value (fromInteger i)
+  abs x                 = x
+  signum 0              = 0
+  signum _              = 1
+  fromInteger i         = Value (fromInteger i)
 
 -- The PicoBlaze has 16 general purpose 8-bit registers.
 data Register =
@@ -55,10 +55,10 @@ data Modifier
   deriving (Eq, Show)
 
 data Operand =
-    ValueOperand      Value
+    ValueOperand Value
   | IdentifierOperand Identifier (Maybe Modifier)
-  | RegisterOperand   Register
-  | ConditionOperand  Condition
+  | RegisterOperand Register
+  | ConditionOperand Condition
   deriving (Eq, Show)
 
 data Statement =
