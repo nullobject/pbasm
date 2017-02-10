@@ -203,7 +203,7 @@ spec = do
         assemble (BinaryInstruction "jump" (ConditionOperand NotCarryCondition) (ValueOperand 0xFFF)) `shouldReturn` [0x3EFFF]
 
       it "assembles a 'JUMP@ (sX, sY)' instruction" $ do
-        assemble (BinaryInstruction "jump@" (ValueOperand 0xF) (ValueOperand 0xF)) `shouldReturn` [0x26FF0]
+        assemble (BinaryInstruction "jump@" (RegisterOperand Register0) (RegisterOperand Register1)) `shouldReturn` [0x26010]
 
     context "subroutines" $ do
       it "assembles a 'CALL aaa' instruction" $ do
@@ -222,7 +222,7 @@ spec = do
         assemble (BinaryInstruction "call" (ConditionOperand NotCarryCondition) (ValueOperand 0xFFF)) `shouldReturn` [0x3CFFF]
 
       it "assembles a 'CALL@ (sX, sY)' instruction" $ do
-        assemble (BinaryInstruction "call@" (ValueOperand 0xF) (ValueOperand 0xF)) `shouldReturn` [0x24FF0]
+        assemble (BinaryInstruction "call@" (RegisterOperand Register0) (RegisterOperand Register1)) `shouldReturn` [0x24010]
 
       it "assembles a 'RETURN' instruction" $ do
         assemble (NullaryInstruction "return") `shouldReturn` [0x25000]

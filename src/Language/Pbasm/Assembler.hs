@@ -167,8 +167,8 @@ assemble (BinaryInstruction "jump" (ConditionOperand x) y)
   | x == CarryCondition    = pack1 0x3A y
   | x == NotCarryCondition = pack1 0x3E y
 
-assemble (BinaryInstruction "jump@" (ValueOperand x) (ValueOperand y)) =
-  return $ Just $ (0x26 `shiftL` 12) .|. ((fromValue x .&. 0xF) `shiftL` 8) .|. ((fromValue y .&. 0xF) `shiftL` 4)
+assemble (BinaryInstruction "jump@" (RegisterOperand x) (RegisterOperand y)) =
+  return $ Just $ (0x26 `shiftL` 12) .|. ((fromRegister x .&. 0xF) `shiftL` 8) .|. ((fromRegister y .&. 0xF) `shiftL` 4)
 
 -- Subroutines
 assemble (UnaryInstruction "call" x) = pack1 0x20 x
@@ -178,8 +178,8 @@ assemble (BinaryInstruction "call" (ConditionOperand x) y)
   | x == CarryCondition    = pack1 0x38 y
   | x == NotCarryCondition = pack1 0x3C y
 
-assemble (BinaryInstruction "call@" (ValueOperand x) (ValueOperand y)) =
-  return $ Just $ (0x24 `shiftL` 12) .|. ((fromValue x .&. 0xF) `shiftL` 8) .|. ((fromValue y .&. 0xF) `shiftL` 4)
+assemble (BinaryInstruction "call@" (RegisterOperand x) (RegisterOperand y)) =
+  return $ Just $ (0x24 `shiftL` 12) .|. ((fromRegister x .&. 0xF) `shiftL` 8) .|. ((fromRegister y .&. 0xF) `shiftL` 4)
 
 assemble (NullaryInstruction "return") = return $ Just 0x25000
 assemble (UnaryInstruction "return" (ConditionOperand x))
