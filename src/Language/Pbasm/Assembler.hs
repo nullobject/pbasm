@@ -163,9 +163,10 @@ assemble (BinaryInstruction "jump" (ConditionOperand x) y)
 assemble (UnaryInstruction "call" x)   = pack1 0x20 x
 assemble (NullaryInstruction "return") = pack0 0x25
 assemble (UnaryInstruction "return" (ConditionOperand x))
-  | x == ZeroCondition    = pack0 0x31
-  | x == NotZeroCondition = pack0 0x35
-  | x == CarryCondition   = pack0 0x39
+  | x == ZeroCondition     = pack0 0x31
+  | x == NotZeroCondition  = pack0 0x35
+  | x == CarryCondition    = pack0 0x39
+  | x == NotCarryCondition = pack0 0x3D
 
 -- Default
 assemble _ = return Nothing

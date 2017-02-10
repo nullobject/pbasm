@@ -195,6 +195,9 @@ spec = do
       it "assembles a 'RETURN C instruction" $ do
         assemble (UnaryInstruction "return" (ConditionOperand CarryCondition)) `shouldReturn` [0x39000]
 
+      it "assembles a 'RETURN NC instruction" $ do
+        assemble (UnaryInstruction "return" (ConditionOperand NotCarryCondition)) `shouldReturn` [0x3D000]
+
     it "ignores unknown statements" $ do
       assemble (NullaryInstruction "lol") `shouldReturn` []
 
