@@ -169,6 +169,7 @@ assemble (UnaryInstruction "call" x) = pack1 0x20 x
 assemble (BinaryInstruction "call" (ConditionOperand x) y)
   | x == ZeroCondition    = pack1 0x30 y
   | x == NotZeroCondition = pack1 0x34 y
+  | x == CarryCondition   = pack1 0x38 y
 
 assemble (NullaryInstruction "return") = return $ Just 0x25000
 assemble (UnaryInstruction "return" (ConditionOperand x))

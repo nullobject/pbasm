@@ -209,6 +209,9 @@ spec = do
       it "assembles a 'CALL NZ, aaa' instruction" $ do
         assemble (BinaryInstruction "call" (ConditionOperand NotZeroCondition) (ValueOperand 0xFFF)) `shouldReturn` [0x34FFF]
 
+      it "assembles a 'CALL C, aaa' instruction" $ do
+        assemble (BinaryInstruction "call" (ConditionOperand CarryCondition) (ValueOperand 0xFFF)) `shouldReturn` [0x38FFF]
+
       it "assembles a 'RETURN' instruction" $ do
         assemble (NullaryInstruction "return") `shouldReturn` [0x25000]
 
