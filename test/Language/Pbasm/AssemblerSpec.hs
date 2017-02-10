@@ -116,6 +116,9 @@ spec = do
       it "assembles a 'OUTPUT sX, pp' instruction" $ do
         assemble (BinaryInstruction "output" (RegisterOperand Register0) (ValueOperand 0xFF)) `shouldReturn` [0x2D0FF]
 
+      it "assembles a 'OUTPUTK kk, p instruction" $ do
+        assemble (BinaryInstruction "outputk" (ValueOperand 0xFF) (ValueOperand 0xF)) `shouldReturn` [0x2BFFF]
+
     context "shift and rotate" $ do
       it "assembles a 'SL0 sX' instruction" $ do
         assemble (UnaryInstruction "sl0" (RegisterOperand Register0)) `shouldReturn` [0x14006]

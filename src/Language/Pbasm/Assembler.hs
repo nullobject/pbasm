@@ -86,6 +86,9 @@ pack2 op (RegisterOperand x) (IdentifierOperand y modifier)
     value <- lookupConstant y
     return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. value
 
+pack2 op (ValueOperand x) (ValueOperand y) =
+  return $ Just $ (op `shiftL` 12) .|. (fromValue x `shiftL` 4) .|. (fromValue y .&. 0xF)
+
 pack2 _ _ _ = return Nothing
 
 -- Assembles the given statement into an opcode.
@@ -128,6 +131,7 @@ assemble (BinaryInstruction "input"   x y@(RegisterOperand _)) = pack2 0x08 x y
 assemble (BinaryInstruction "input"   x y)                     = pack2 0x09 x y
 assemble (BinaryInstruction "output"  x y@(RegisterOperand _)) = pack2 0x2C x y
 assemble (BinaryInstruction "output"  x y)                     = pack2 0x2D x y
+assemble (BinaryInstruction "outputk" x y)                     = pack2 0x2B x y
 
 -- Shift and rotate
 assemble (UnaryInstruction "sl0" x) = pack2 0x14 x (ValueOperand 0x06)
