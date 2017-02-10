@@ -30,6 +30,11 @@ spec = do
         `shouldReturn`
         BinaryInstruction "load" (RegisterOperand Register0) (RegisterOperand Register1)
 
+    it "parses a binary instruction with a dereferenced register operand" $ do
+      parse statement "INPUT s0, (s1)"
+        `shouldReturn`
+        BinaryInstruction "input" (RegisterOperand Register0) (RegisterOperand Register1)
+
     it "parses a binary instruction with a register and a value operand" $ do
       parse statement "LOAD s0, ff"
         `shouldReturn`
