@@ -43,11 +43,6 @@ lookupConstant identifier = do
   constantMap <- asks stateConstantMap
   return $ fromValue $ constantMap ! identifier
 
--- Packs a nullary instruction into binary format.
-pack0 :: Word32 -> AssemblerReader (Maybe Opcode)
-
-pack0 op = return $ Just $ (op `shiftL` 12)
-
 -- Packs a unary instruction into binary format.
 pack1 :: Word32 -> Operand -> AssemblerReader (Maybe Opcode)
 
@@ -165,12 +160,12 @@ assemble (BinaryInstruction "jump" (ConditionOperand x) y)
 
 -- Subroutines
 assemble (UnaryInstruction "call" x)   = pack1 0x20 x
-assemble (NullaryInstruction "return") = pack0 0x25
+assemble (NullaryInstruction "return") = return $ Just 0x25000
 assemble (UnaryInstruction "return" (ConditionOperand x))
-  | x == ZeroCondition     = pack0 0x31
-  | x == NotZeroCondition  = pack0 0x35
-  | x == CarryCondition    = pack0 0x39
-  | x == NotCarryCondition = pack0 0x3D
+  | x == ZeroCondition     = return $ Just 0x31000
+  | x == NotZeroCondition  = return $ Just 0x35000
+  | x == CarryCondition    = return $ Just 0x39000
+  | x == NotCarryCondition = return $ Just 0x3D000
 
 -- Default
 assemble _ = return Nothing
