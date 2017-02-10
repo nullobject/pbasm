@@ -126,6 +126,9 @@ assemble (BinaryInstruction "compare"   x y)                     = pack2 0x1D x 
 assemble (BinaryInstruction "comparecy" x y@(RegisterOperand _)) = pack2 0x1E x y
 assemble (BinaryInstruction "comparecy" x y)                     = pack2 0x1F x y
 
+-- Register Bank Selection
+assemble (NullaryInstruction "regbank a") = pack0 0x37
+
 -- Input and output
 assemble (BinaryInstruction "input"   x y@(RegisterOperand _)) = pack2 0x08 x y
 assemble (BinaryInstruction "input"   x y)                     = pack2 0x09 x y
