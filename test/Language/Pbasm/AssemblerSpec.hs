@@ -126,6 +126,12 @@ spec = do
       it "assembles a STORE sX, sY' instruction" $ do
         assemble (BinaryInstruction "store" (RegisterOperand Register2) (ValueOperand 0xFF)) `shouldReturn` [0x2F2FF]
 
+      it "assembles a FETCH sX, (sY)' instruction" $ do
+        assemble (BinaryInstruction "fetch" (RegisterOperand Register2) (RegisterOperand Register1)) `shouldReturn` [0x0A210]
+
+      it "assembles a FETCH sX, sY' instruction" $ do
+        assemble (BinaryInstruction "fetch" (RegisterOperand Register2) (ValueOperand 0xFF)) `shouldReturn` [0x0B2FF]
+
     context "shift and rotate" $ do
       it "assembles a 'SL0 sX' instruction" $ do
         assemble (UnaryInstruction "sl0" (RegisterOperand Register0)) `shouldReturn` [0x14006]
