@@ -34,13 +34,13 @@ import qualified Text.ParserCombinators.Parsec.Token as Token
 import Language.Pbasm.Core
 
 directiveNames :: [String]
-directiveNames = ["constant", "string", "table", "address", "include"]
+directiveNames = ["constant", "string", "table", "address", "include", "disable", "enable", "interrupt", "returni"]
 
 nullaryInstructionNames :: [String]
-nullaryInstructionNames = ["regbank a", "regbank b", "enable interrupt", "disable interrupt", "returni disable", "returni enable", "return"]
+nullaryInstructionNames = ["return"]
 
 unaryInstructionNames :: [String]
-unaryInstructionNames = ["sl0", "sl1", "slx", "sla", "rl", "sr0", "sr1", "srx", "sra", "rr", "jump", "call"]
+unaryInstructionNames = ["regbank", "sl0", "sl1", "slx", "sla", "rl", "sr0", "sr1", "srx", "sra", "rr", "jump", "call"]
 
 binaryInstructionNames :: [String]
 binaryInstructionNames = ["load", "star", "and", "or", "xor", "add", "addcy", "sub", "subcy", "test", "testcy", "compare", "comparecy", "input", "output", "outputk", "store", "fetch", "jump", "jump@", "call", "call@", "load&return"]

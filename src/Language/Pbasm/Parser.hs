@@ -44,7 +44,11 @@ binaryInstruction name = try $ reserved name *> (BinaryInstruction name <$> oper
 
 -- Parses a directive.
 directive :: Parser Statement
-directive = constantDirective
+directive = constantDirective <|> disableInterrupt <|> enableInterrupt <|> returniDisable <|> returniEnable
+  where disableInterrupt = (NullaryInstruction "disable interrupt") <$ reserved "disable" <* reserved "interrupt"
+        enableInterrupt  = (NullaryInstruction "enable interrupt")  <$ reserved "enable"  <* reserved "interrupt"
+        returniDisable   = (NullaryInstruction "returni disable")   <$ reserved "returni" <* reserved "disable"
+        returniEnable    = (NullaryInstruction "returni enable")    <$ reserved "returni" <* reserved "enable"
 
 -- Parses an instruction and increments the program address.
 instruction :: Parser Statement

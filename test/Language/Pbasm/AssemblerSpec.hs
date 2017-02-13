@@ -107,11 +107,9 @@ spec = do
         assemble (BinaryInstruction "comparecy" (RegisterOperand Register0) (ValueOperand 0xFF)) `shouldReturn` [0x1F0FF]
 
     context "register bank selection" $ do
-      it "assembles a 'REGBANK A' instruction" $ do
-        assemble (NullaryInstruction "regbank a") `shouldReturn` [0x37000]
-
-      it "assembles a 'REGBANK B' instruction" $ do
-        assemble (NullaryInstruction "regbank b") `shouldReturn` [0x37001]
+      it "assembles a 'REGBANK' instruction" $ do
+        assemble (UnaryInstruction "regbank" (ValueOperand 0xA)) `shouldReturn` [0x37000]
+        assemble (UnaryInstruction "regbank" (ValueOperand 0xB)) `shouldReturn` [0x37001]
 
     context "input and output" $ do
       it "assembles a 'INPUT sX, (sY)' instruction" $ do

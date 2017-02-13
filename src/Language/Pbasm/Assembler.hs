@@ -125,8 +125,8 @@ assemble (BinaryInstruction "comparecy" x y@(RegisterOperand _)) = pack2 0x1E x 
 assemble (BinaryInstruction "comparecy" x y)                     = pack2 0x1F x y
 
 -- Register Bank Selection
-assemble (NullaryInstruction "regbank a") = return $ Just 0x37000
-assemble (NullaryInstruction "regbank b") = return $ Just 0x37001
+assemble (UnaryInstruction "regbank" (ValueOperand x)) =
+  return $ Just $ (0x37 `shiftL` 12) .|. (((fromValue x) - 0xA) .&. 0x1)
 
 -- Input and output
 assemble (BinaryInstruction "input"   x y@(RegisterOperand _)) = pack2 0x08 x y
