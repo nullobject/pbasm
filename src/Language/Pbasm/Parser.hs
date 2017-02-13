@@ -30,9 +30,23 @@ constantDirective = do
   updateState . addConstant $ d
   return d
 
--- Parses an instruction of arity 0.
-nullaryInstruction :: String -> CharParser u Statement
-nullaryInstruction name = try $ NullaryInstruction name <$ reserved name
+-- Parses a directive.
+directive :: Parser Statement
+directive = constantDirective
+
+nullaryInstructions :: [Parser Statement]
+nullaryInstructions =
+  [ returnInstruction
+  , disableInterruptInstruction
+  , enableInterruptInstruction
+  , returniDisableInstruction
+  , returniEnableInstruction
+  ]
+    where returnInstruction         = (NullaryInstruction "return")            <$ reserved "return"
+        disableInterruptInstruction = (NullaryInstruction "disable interrupt") <$ reserved "disable" <* reserved "interrupt"
+        enableInterruptInstruction  = (NullaryInstruction "enable interrupt")  <$ reserved "enable"  <* reserved "interrupt"
+        returniDisableInstruction   = (NullaryInstruction "returni disable")   <$ reserved "returni" <* reserved "disable"
+        returniEnableInstruction    = (NullaryInstruction "returni enable")    <$ reserved "returni" <* reserved "enable"
 
 -- Parses an instruction of arity 1.
 unaryInstruction :: String -> CharParser u Statement
@@ -42,23 +56,14 @@ unaryInstruction name = try $ reserved name *> (UnaryInstruction name <$> operan
 binaryInstruction :: String -> CharParser u Statement
 binaryInstruction name = try $ reserved name *> (BinaryInstruction name <$> operand <*> (comma *> operand))
 
--- Parses a directive.
-directive :: Parser Statement
-directive = constantDirective <|> disableInterrupt <|> enableInterrupt <|> returniDisable <|> returniEnable
-  where disableInterrupt = (NullaryInstruction "disable interrupt") <$ reserved "disable" <* reserved "interrupt"
-        enableInterrupt  = (NullaryInstruction "enable interrupt")  <$ reserved "enable"  <* reserved "interrupt"
-        returniDisable   = (NullaryInstruction "returni disable")   <$ reserved "returni" <* reserved "disable"
-        returniEnable    = (NullaryInstruction "returni enable")    <$ reserved "returni" <* reserved "enable"
-
 -- Parses an instruction and increments the program address.
 instruction :: Parser Statement
 instruction = do
   i <- choice $ binaryInstructions ++ unaryInstructions ++ nullaryInstructions
   updateState incrementAddress
   return i
-  where nullaryInstructions = map nullaryInstruction nullaryInstructionNames
-        unaryInstructions   = map unaryInstruction   unaryInstructionNames
-        binaryInstructions  = map binaryInstruction  binaryInstructionNames
+  where unaryInstructions  = map unaryInstruction  unaryInstructionNames
+        binaryInstructions = map binaryInstruction binaryInstructionNames
 
 -- Parses a statement.
 statement :: Parser Statement

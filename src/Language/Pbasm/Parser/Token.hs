@@ -34,10 +34,10 @@ import qualified Text.ParserCombinators.Parsec.Token as Token
 import Language.Pbasm.Core
 
 directiveNames :: [String]
-directiveNames = ["constant", "string", "table", "address", "include", "disable", "enable", "interrupt", "returni"]
+directiveNames = ["constant", "string", "table", "address", "include"]
 
 nullaryInstructionNames :: [String]
-nullaryInstructionNames = ["return"]
+nullaryInstructionNames = ["enable interrupt", "disable interrupt", "returni disable", "returni enable", "return"]
 
 unaryInstructionNames :: [String]
 unaryInstructionNames = ["regbank", "sl0", "sl1", "slx", "sla", "rl", "sr0", "sr1", "srx", "sra", "rr", "jump", "call"]

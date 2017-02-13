@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-
 module Language.Pbasm.Core where
 
 import Control.Exception (Exception)
