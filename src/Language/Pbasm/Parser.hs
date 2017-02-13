@@ -34,6 +34,8 @@ constantDirective = do
 directive :: Parser Statement
 directive = constantDirective
 
+-- The nullary instructions are special-cased because they include two-word
+-- instructions. Ideally we could generate these automatically.
 nullaryInstructions :: [Parser Statement]
 nullaryInstructions =
   [ returnInstruction
@@ -42,7 +44,7 @@ nullaryInstructions =
   , returniDisableInstruction
   , returniEnableInstruction
   ]
-    where returnInstruction         = (NullaryInstruction "return")            <$ reserved "return"
+  where returnInstruction           = (NullaryInstruction "return")            <$ reserved "return"
         disableInterruptInstruction = (NullaryInstruction "disable interrupt") <$ reserved "disable" <* reserved "interrupt"
         enableInterruptInstruction  = (NullaryInstruction "enable interrupt")  <$ reserved "enable"  <* reserved "interrupt"
         returniDisableInstruction   = (NullaryInstruction "returni disable")   <$ reserved "returni" <* reserved "disable"

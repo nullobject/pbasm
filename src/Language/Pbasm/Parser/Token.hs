@@ -26,6 +26,8 @@ module Language.Pbasm.Parser.Token
   ) where
 
 import Data.Char (digitToInt)
+import Data.List (nub)
+import Data.List.Split (splitOn)
 import Text.ParserCombinators.Parsec hiding (label)
 import Text.ParserCombinators.Parsec.Language
 import Text.ParserCombinators.Parsec.Token (TokenParser)
@@ -56,9 +58,10 @@ psmDef = emptyDef
   , Token.commentLine     = ";"
   , Token.identLetter     = alphaNum <|> char '_'
   , Token.nestedComments  = False
-  , Token.reservedNames   = directiveNames ++ nullaryInstructionNames ++ unaryInstructionNames ++ binaryInstructionNames ++ conditionNames
+  , Token.reservedNames   = nub $ concatMap (splitOn " ") names
   , Token.reservedOpNames = ["~"]
   }
+  where names = directiveNames ++ nullaryInstructionNames ++ unaryInstructionNames ++ binaryInstructionNames ++ conditionNames
 
 psm :: TokenParser st
 psm = Token.makeTokenParser psmDef
