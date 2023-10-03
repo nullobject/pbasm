@@ -1,7 +1,5 @@
-resolver: lts-15.7
+resolver: lts-21.9
 packages:
 - '.'
 extra-deps: []
 flags: {}
-docker:
-  enable: true
