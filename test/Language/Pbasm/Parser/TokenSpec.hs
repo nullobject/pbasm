@@ -16,7 +16,7 @@ fromLeft (Left x) = x
 fromLeft (Right err) = error $ "no left value" ++ show err
 
 parse :: CharParser [Char] a -> [Char] -> Either ParseError a
-parse p input = runParser p "" "" input
+parse p = runParser p "" ""
 
 main :: IO ()
 main = hspec spec
