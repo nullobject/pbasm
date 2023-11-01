@@ -3,5 +3,3 @@ packages:
 - '.'
 extra-deps: []
 flags: {}
-docker:
-  enable: true
