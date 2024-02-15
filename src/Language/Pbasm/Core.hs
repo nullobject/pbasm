@@ -11,7 +11,7 @@ type Identifier = String
 
 type Opcode = Word32
 
--- An 8-bit data value.
+-- | An 8-bit data value.
 newtype Value = Value Word32 deriving (Eq, Show)
 
 instance Num Value where
@@ -23,7 +23,7 @@ instance Num Value where
   signum _ = 1
   fromInteger i = Value (fromInteger i)
 
--- The PicoBlaze has 16 general purpose 8-bit registers.
+-- | The PicoBlaze has 16 general purpose 8-bit registers.
 data Register
   = Register0
   | Register1
@@ -75,32 +75,32 @@ data Operand
   deriving (Eq, Show)
 
 data Statement
-  = -- Assigns a name to a constant value.
+  = -- | Assigns a name to a constant value.
     ConstantDirective Identifier Value
-  | -- Defines a list of characters for use with OUTPUTK and LOAD&RETURN
+  | -- | Defines a list of characters for use with OUTPUTK and LOAD&RETURN
     -- instructions.
     StringDirective Identifier String
-  | -- Defines a list of values for use with OUTPUTK and LOAD&RETURN
+  | -- | Defines a list of values for use with OUTPUTK and LOAD&RETURN
     -- instructions.
     TableDirective Identifier [Value]
-  | -- Forces the assembler to assemble all subsequent instructions starting at
+  | -- | Forces the assembler to assemble all subsequent instructions starting at
     -- the address defined.
     AddressDirective Value
-  | -- Inserts the contents of another file into the program immediately
+  | -- | Inserts the contents of another file into the program immediately
     -- following the directive.
     IncludeDirective FilePath
-  | -- An instruction of arity 0.
+  | -- | An instruction of arity 0.
     NullaryInstruction String
-  | -- An instruction of arity 1.
+  | -- | An instruction of arity 1.
     UnaryInstruction String Operand
-  | -- An instruction of arity 2.
+  | -- | An instruction of arity 2.
     BinaryInstruction String Operand Operand
   deriving (Eq, Show)
 
--- A map from constants to data values.
+-- | A map from constants to data values.
 type ConstantMap = Map Identifier Value
 
--- A map from labels to address values.
+-- | A map from labels to address values.
 type LabelMap = Map Identifier Value
 
 type ParserResult = ([Statement], ConstantMap, LabelMap)
@@ -125,7 +125,7 @@ isTemplateError :: PbasmException -> Bool
 isTemplateError (TemplateException _) = True
 isTemplateError _ = False
 
--- Prints the first n hexadecimal digits of the given opcode.
+-- | Prints the first n hexadecimal digits of the given opcode.
 showHex :: Int -> Opcode -> String
 showHex n opcode = printf format value
   where

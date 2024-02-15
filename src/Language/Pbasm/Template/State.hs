@@ -18,7 +18,7 @@ data State = State
   }
   deriving (Eq, Show)
 
--- Returns the default template state.
+-- | Returns the default template state.
 templateState :: State
 templateState =
   State

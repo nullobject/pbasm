@@ -1,6 +1,5 @@
 -- This module defines the primitive token parsers.
 module Language.Pbasm.Parser.Token
--- Token parsers
   ( colon,
     comma,
     identifier,
@@ -8,7 +7,6 @@ module Language.Pbasm.Parser.Token
     reserved,
     reservedOp,
     whiteSpace,
-    -- Primitive parsers
     hexadecimal,
     decimal,
     binary,
@@ -17,7 +15,6 @@ module Language.Pbasm.Parser.Token
     pointer,
     condition,
     operand,
-    -- Instructions
     nullaryInstructionNames,
     unaryInstructionNames,
     binaryInstructionNames,
@@ -93,52 +90,52 @@ whiteSpace = Token.whiteSpace psm
 binDigit :: CharParser u Char
 binDigit = oneOf "01"
 
--- Parses a base-n number using the given digit parser.
+-- | Parses a base-n number using the given digit parser.
 number :: Int -> CharParser u Char -> CharParser u Int
 number base baseDigit = do
   digits <- many1 baseDigit
   let n = foldl (\x d -> base * x + digitToInt d) 0 digits
   seq n (return n)
 
--- Parses a hexadecimal number.
+-- | Parses a hexadecimal number.
 hexadecimal :: (Enum a) => CharParser u a
 hexadecimal = try $ toEnum <$> number 16 hexDigit <* notFollowedBy alphaNum
 
--- Parses a decimal number.
+-- | Parses a decimal number.
 decimal :: (Enum a) => CharParser u a
 decimal = try $ toEnum <$> number 10 digit <* char '\'' <* oneOf "dD"
 
--- Parses a binary number.
+-- | Parses a binary number.
 binary :: (Enum a) => CharParser u a
 binary = try $ toEnum <$> number 2 binDigit <* char '\'' <* oneOf "bB"
 
--- Parses an ASCII character.
+-- | Parses an ASCII character.
 character :: (Enum a) => CharParser u a
 character = try $ toEnum . fromEnum <$> between (char '"') (char '"' <?> "end of character") charLetter
   where
     charLetter = satisfy (\c -> c /= '\'' && c /= '\\' && c > '\026')
 
--- Parses a value.
+-- | Parses a value.
 value :: CharParser u Value
 value = lexeme (Value <$> integer) <?> "value"
   where
     integer = character <|> decimal <|> binary <|> hexadecimal
 
--- Parses a register name.
+-- | Parses a register name.
 register :: CharParser u Register
 register = lexeme (try $ oneOf "sS" *> hexadecimal) <?> "register"
 
--- Parses a pointer.
+-- | Parses a pointer.
 pointer :: CharParser u Register
 pointer = lexeme (try $ parens register) <?> "pointer"
 
--- Parses a condition.
+-- | Parses a condition.
 condition :: CharParser u Condition
 condition = lexeme (readCondition <$> choice ps) <?> "condition"
   where
     ps = map (\name -> name <$ reserved name) conditionNames
 
--- Parses an operand.
+-- | Parses an operand.
 operand :: CharParser u Operand
 operand = valueOperand <|> registerOperand <|> conditionOperand <|> identifierOperand <?> "operand"
   where

@@ -45,7 +45,7 @@ lookupConstant identifier = do
   constantMap <- asks stateConstantMap
   return $ fromValue $ constantMap ! identifier
 
--- Packs a unary instruction into binary format.
+-- | Packs a unary instruction into binary format.
 pack1 :: Word32 -> Operand -> AssemblerReader (Maybe Opcode)
 pack1 op (ValueOperand x) =
   return $ Just $ (op `shiftL` 12) .|. fromValue x
@@ -54,7 +54,7 @@ pack1 op (IdentifierOperand x _) = do
   return $ Just $ (op `shiftL` 12) .|. value
 pack1 _ _ = return Nothing
 
--- Packs a binary instruction into binary format.
+-- | Packs a binary instruction into binary format.
 pack2 :: Word32 -> Operand -> Operand -> AssemblerReader (Maybe Opcode)
 pack2 op (RegisterOperand x) (RegisterOperand y) =
   return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromRegister y `shiftL` 4)
@@ -77,7 +77,7 @@ pack2 op (ValueOperand x) (ValueOperand y) =
   return $ Just $ (op `shiftL` 12) .|. (fromValue x `shiftL` 4) .|. (fromValue y .&. 0xF)
 pack2 _ _ _ = return Nothing
 
--- Assembles the given statement into an opcode.
+-- | Assembles the given statement into an opcode.
 assemble :: Statement -> AssemblerReader (Maybe Opcode)
 -- Register loading
 assemble (BinaryInstruction "load" x y@(RegisterOperand _)) = pack2 0x00 x y
@@ -109,7 +109,7 @@ assemble (BinaryInstruction "compare" x y@(RegisterOperand _)) = pack2 0x1C x y
 assemble (BinaryInstruction "compare" x y) = pack2 0x1D x y
 assemble (BinaryInstruction "comparecy" x y@(RegisterOperand _)) = pack2 0x1E x y
 assemble (BinaryInstruction "comparecy" x y) = pack2 0x1F x y
--- Register Bank Selection
+-- Register bank selection
 assemble (UnaryInstruction "regbank" (ValueOperand x)) =
   return $ Just $ (0x37 `shiftL` 12) .|. ((fromValue x - 0xA) .&. 0x1)
 -- Input and output
@@ -118,12 +118,12 @@ assemble (BinaryInstruction "input" x y) = pack2 0x09 x y
 assemble (BinaryInstruction "output" x y@(RegisterOperand _)) = pack2 0x2C x y
 assemble (BinaryInstruction "output" x y) = pack2 0x2D x y
 assemble (BinaryInstruction "outputk" x y) = pack2 0x2B x y
--- Scratch Pad Memory
+-- Scratch pad memory
 assemble (BinaryInstruction "store" x y@(RegisterOperand _)) = pack2 0x2E x y
 assemble (BinaryInstruction "store" x y) = pack2 0x2F x y
 assemble (BinaryInstruction "fetch" x y@(RegisterOperand _)) = pack2 0x0A x y
 assemble (BinaryInstruction "fetch" x y) = pack2 0x0B x y
--- Interrupt Handling
+-- Interrupt handling
 assemble (NullaryInstruction "disable interrupt") = return $ Just 0x28000
 assemble (NullaryInstruction "enable interrupt") = return $ Just 0x28001
 assemble (NullaryInstruction "returni disable") = return $ Just 0x29000
@@ -167,7 +167,7 @@ assemble (BinaryInstruction "load&return" x y) = pack2 0x21 x y
 -- Default
 assemble _ = return Nothing
 
--- Assembles the given statements into opcodes.
+-- | Assembles the given statements into opcodes.
 runAssembler :: ParserResult -> IO [Opcode]
 runAssembler (statements, constantMap, labelMap) = return opcodes
   where
