@@ -48,7 +48,7 @@ lookupConstant identifier = do
 -- Packs a unary instruction into binary format.
 pack1 :: Word32 -> Operand -> AssemblerReader (Maybe Opcode)
 pack1 op (ValueOperand x) =
-  return $ Just $ (op `shiftL` 12) .|. (fromValue x)
+  return $ Just $ (op `shiftL` 12) .|. fromValue x
 pack1 op (IdentifierOperand x _) = do
   value <- lookupLabel x
   return $ Just $ (op `shiftL` 12) .|. value
@@ -59,7 +59,7 @@ pack2 :: Word32 -> Operand -> Operand -> AssemblerReader (Maybe Opcode)
 pack2 op (RegisterOperand x) (RegisterOperand y) =
   return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromRegister y `shiftL` 4)
 pack2 op (RegisterOperand x) (ValueOperand y) =
-  return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. (fromValue y)
+  return $ Just $ (op `shiftL` 12) .|. (fromRegister x `shiftL` 8) .|. fromValue y
 pack2 op (RegisterOperand x) (IdentifierOperand y modifier)
   | modifier == Just InvertModifier = do
       value <- lookupConstant y
@@ -111,7 +111,7 @@ assemble (BinaryInstruction "comparecy" x y@(RegisterOperand _)) = pack2 0x1E x 
 assemble (BinaryInstruction "comparecy" x y) = pack2 0x1F x y
 -- Register Bank Selection
 assemble (UnaryInstruction "regbank" (ValueOperand x)) =
-  return $ Just $ (0x37 `shiftL` 12) .|. (((fromValue x) - 0xA) .&. 0x1)
+  return $ Just $ (0x37 `shiftL` 12) .|. ((fromValue x - 0xA) .&. 0x1)
 -- Input and output
 assemble (BinaryInstruction "input" x y@(RegisterOperand _)) = pack2 0x08 x y
 assemble (BinaryInstruction "input" x y) = pack2 0x09 x y

@@ -45,11 +45,11 @@ nullaryInstructions =
     returniEnableInstruction
   ]
   where
-    returnInstruction = (NullaryInstruction "return") <$ reserved "return"
-    disableInterruptInstruction = (NullaryInstruction "disable interrupt") <$ reserved "disable" <* reserved "interrupt"
-    enableInterruptInstruction = (NullaryInstruction "enable interrupt") <$ reserved "enable" <* reserved "interrupt"
-    returniDisableInstruction = (NullaryInstruction "returni disable") <$ reserved "returni" <* reserved "disable"
-    returniEnableInstruction = (NullaryInstruction "returni enable") <$ reserved "returni" <* reserved "enable"
+    returnInstruction = NullaryInstruction "return" <$ reserved "return"
+    disableInterruptInstruction = NullaryInstruction "disable interrupt" <$ reserved "disable" <* reserved "interrupt"
+    enableInterruptInstruction = NullaryInstruction "enable interrupt" <$ reserved "enable" <* reserved "interrupt"
+    returniDisableInstruction = NullaryInstruction "returni disable" <$ reserved "returni" <* reserved "disable"
+    returniEnableInstruction = NullaryInstruction "returni enable" <$ reserved "returni" <* reserved "enable"
 
 -- Parses an instruction of arity 1.
 unaryInstruction :: String -> CharParser u Statement

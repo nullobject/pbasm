@@ -74,23 +74,23 @@ romPTag = do
 romBank :: [Opcode] -> Int -> [Opcode]
 romBank rom index = banks !! index
   where
-    banks = (chunksOf' bankSize rom) ++ (repeat $ replicate bankSize 0)
+    banks = chunksOf' bankSize rom ++ repeat (replicate bankSize 0)
 
 -- Calculates the 'INITP_kk' ROM bank at the given index from the opcodes.
 romBankP :: [Opcode] -> Int -> [Opcode]
 romBankP rom index = banks !! index
   where
-    banks = (chunksOf' bankSize rom') ++ (repeat $ replicate bankSize 0)
+    banks = chunksOf' bankSize rom' ++ repeat (replicate bankSize 0)
     rom' = map pack $ chunksOf' 8 rom
     pack opcodes = fst $ foldl (\(word, n) opcode -> (word .|. f opcode n, n + 2)) (0, 0) opcodes
-    f opcode n = ((opcode `shiftR` 16) .&. 3) `shiftL` n
+    f opcode n = (opcode `shiftR` 16 .&. 3) `shiftL` n
 
 -- Splits a list into length-n chunks. The last chunk will be padded with zeros
 -- if its length is less than n.
 chunksOf' :: (Num a) => Int -> [a] -> [[a]]
 chunksOf' n xs = map pad (chunksOf n xs)
   where
-    pad ys = ys ++ (replicate (n - length ys) 0)
+    pad ys = ys ++ replicate (n - length ys) 0
 
 -- Replaces the tags in the input string with their values.
 template :: Parser [String]

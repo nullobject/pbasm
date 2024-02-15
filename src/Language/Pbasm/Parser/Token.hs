@@ -97,7 +97,7 @@ binDigit = oneOf "01"
 number :: Int -> CharParser u Char -> CharParser u Int
 number base baseDigit = do
   digits <- many1 baseDigit
-  let n = foldl (\x d -> (base * x) + digitToInt d) 0 digits
+  let n = foldl (\x d -> base * x + digitToInt d) 0 digits
   seq n (return n)
 
 -- Parses a hexadecimal number.
@@ -114,27 +114,27 @@ binary = try $ toEnum <$> number 2 binDigit <* char '\'' <* oneOf "bB"
 
 -- Parses an ASCII character.
 character :: (Enum a) => CharParser u a
-character = try $ toEnum . fromEnum <$> (between (char '"') (char '"' <?> "end of character") charLetter)
+character = try $ toEnum . fromEnum <$> between (char '"') (char '"' <?> "end of character") charLetter
   where
-    charLetter = satisfy (\c -> (c /= '\'') && (c /= '\\') && (c > '\026'))
+    charLetter = satisfy (\c -> c /= '\'' && c /= '\\' && c > '\026')
 
 -- Parses a value.
 value :: CharParser u Value
-value = (lexeme $ Value <$> integer) <?> "value"
+value = lexeme (Value <$> integer) <?> "value"
   where
     integer = character <|> decimal <|> binary <|> hexadecimal
 
 -- Parses a register name.
 register :: CharParser u Register
-register = (lexeme $ try $ oneOf "sS" *> hexadecimal) <?> "register"
+register = lexeme (try $ oneOf "sS" *> hexadecimal) <?> "register"
 
 -- Parses a pointer.
 pointer :: CharParser u Register
-pointer = (lexeme $ try $ parens register) <?> "pointer"
+pointer = lexeme (try $ parens register) <?> "pointer"
 
 -- Parses a condition.
 condition :: CharParser u Condition
-condition = (lexeme $ readCondition <$> choice ps) <?> "condition"
+condition = lexeme (readCondition <$> choice ps) <?> "condition"
   where
     ps = map (\name -> name <$ reserved name) conditionNames
 
@@ -147,7 +147,7 @@ operand = valueOperand <|> registerOperand <|> conditionOperand <|> identifierOp
     conditionOperand = ConditionOperand <$> condition
     identifierOperand = invertedIdentifierOperand <|> upperIdentifierOperand <|> lowerIdentifierOperand <|> normalIdentifierOperand
 
-    normalIdentifierOperand = (flip IdentifierOperand $ Nothing) <$> identifier
-    invertedIdentifierOperand = (flip IdentifierOperand $ Just InvertModifier) <$> (try $ reservedOp "~" *> identifier)
-    lowerIdentifierOperand = (flip IdentifierOperand $ Just LowerModifier) <$> (try $ identifier <* string "'lower")
-    upperIdentifierOperand = (flip IdentifierOperand $ Just UpperModifier) <$> (try $ identifier <* string "'upper")
+    normalIdentifierOperand = flip IdentifierOperand Nothing <$> identifier
+    invertedIdentifierOperand = flip IdentifierOperand (Just InvertModifier) <$> try (reservedOp "~" *> identifier)
+    lowerIdentifierOperand = flip IdentifierOperand (Just LowerModifier) <$> try (identifier <* string "'lower")
+    upperIdentifierOperand = flip IdentifierOperand (Just UpperModifier) <$> try (identifier <* string "'upper")
