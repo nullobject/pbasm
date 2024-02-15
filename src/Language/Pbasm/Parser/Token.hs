@@ -1,39 +1,37 @@
 -- This module defines the primitive token parsers.
 module Language.Pbasm.Parser.Token
-    -- Token parsers
-  ( colon
-  , comma
-  , identifier
-  , parens
-  , reserved
-  , reservedOp
-  , whiteSpace
-
+-- Token parsers
+  ( colon,
+    comma,
+    identifier,
+    parens,
+    reserved,
+    reservedOp,
+    whiteSpace,
     -- Primitive parsers
-  , hexadecimal
-  , decimal
-  , binary
-  , value
-  , register
-  , pointer
-  , condition
-  , operand
-
+    hexadecimal,
+    decimal,
+    binary,
+    value,
+    register,
+    pointer,
+    condition,
+    operand,
     -- Instructions
-  , nullaryInstructionNames
-  , unaryInstructionNames
-  , binaryInstructionNames
-  ) where
+    nullaryInstructionNames,
+    unaryInstructionNames,
+    binaryInstructionNames,
+  )
+where
 
 import Data.Char (digitToInt)
 import Data.List (nub)
 import Data.List.Split (splitOn)
+import Language.Pbasm.Core
 import Text.ParserCombinators.Parsec hiding (label)
 import Text.ParserCombinators.Parsec.Language
 import Text.ParserCombinators.Parsec.Token (TokenParser)
 import qualified Text.ParserCombinators.Parsec.Token as Token
-
-import Language.Pbasm.Core
 
 directiveNames :: [String]
 directiveNames = ["constant", "string", "table", "address", "include"]
@@ -51,17 +49,19 @@ conditionNames :: [String]
 conditionNames = ["z", "nz", "c", "nc"]
 
 psmDef :: LanguageDef st
-psmDef = emptyDef
-  { Token.caseSensitive   = False
-  , Token.commentStart    = ""
-  , Token.commentEnd      = ""
-  , Token.commentLine     = ";"
-  , Token.identLetter     = alphaNum <|> char '_'
-  , Token.nestedComments  = False
-  , Token.reservedNames   = nub $ concatMap (splitOn " ") names
-  , Token.reservedOpNames = ["~"]
-  }
-  where names = directiveNames ++ nullaryInstructionNames ++ unaryInstructionNames ++ binaryInstructionNames ++ conditionNames
+psmDef =
+  emptyDef
+    { Token.caseSensitive = False,
+      Token.commentStart = "",
+      Token.commentEnd = "",
+      Token.commentLine = ";",
+      Token.identLetter = alphaNum <|> char '_',
+      Token.nestedComments = False,
+      Token.reservedNames = nub $ concatMap (splitOn " ") names,
+      Token.reservedOpNames = ["~"]
+    }
+  where
+    names = directiveNames ++ nullaryInstructionNames ++ unaryInstructionNames ++ binaryInstructionNames ++ conditionNames
 
 psm :: TokenParser st
 psm = Token.makeTokenParser psmDef
@@ -115,12 +115,14 @@ binary = try $ toEnum <$> number 2 binDigit <* char '\'' <* oneOf "bB"
 -- Parses an ASCII character.
 character :: (Enum a) => CharParser u a
 character = try $ toEnum . fromEnum <$> (between (char '"') (char '"' <?> "end of character") charLetter)
-  where charLetter = satisfy (\c -> (c /= '\'') && (c /= '\\') && (c > '\026'))
+  where
+    charLetter = satisfy (\c -> (c /= '\'') && (c /= '\\') && (c > '\026'))
 
 -- Parses a value.
 value :: CharParser u Value
 value = (lexeme $ Value <$> integer) <?> "value"
-  where integer = character <|> decimal <|> binary <|> hexadecimal
+  where
+    integer = character <|> decimal <|> binary <|> hexadecimal
 
 -- Parses a register name.
 register :: CharParser u Register
@@ -133,17 +135,19 @@ pointer = (lexeme $ try $ parens register) <?> "pointer"
 -- Parses a condition.
 condition :: CharParser u Condition
 condition = (lexeme $ readCondition <$> choice ps) <?> "condition"
-  where ps = map (\name -> name <$ reserved name) conditionNames
+  where
+    ps = map (\name -> name <$ reserved name) conditionNames
 
 -- Parses an operand.
 operand :: CharParser u Operand
 operand = valueOperand <|> registerOperand <|> conditionOperand <|> identifierOperand <?> "operand"
-  where valueOperand      = ValueOperand     <$> value
-        registerOperand   = RegisterOperand  <$> (register <|> pointer)
-        conditionOperand  = ConditionOperand <$> condition
-        identifierOperand = invertedIdentifierOperand <|> upperIdentifierOperand <|> lowerIdentifierOperand <|> normalIdentifierOperand
+  where
+    valueOperand = ValueOperand <$> value
+    registerOperand = RegisterOperand <$> (register <|> pointer)
+    conditionOperand = ConditionOperand <$> condition
+    identifierOperand = invertedIdentifierOperand <|> upperIdentifierOperand <|> lowerIdentifierOperand <|> normalIdentifierOperand
 
-        normalIdentifierOperand   = (flip IdentifierOperand $ Nothing            ) <$> identifier
-        invertedIdentifierOperand = (flip IdentifierOperand $ Just InvertModifier) <$> (try $ reservedOp "~" *> identifier)
-        lowerIdentifierOperand    = (flip IdentifierOperand $ Just LowerModifier ) <$> (try $ identifier <* string "'lower")
-        upperIdentifierOperand    = (flip IdentifierOperand $ Just UpperModifier ) <$> (try $ identifier <* string "'upper")
+    normalIdentifierOperand = (flip IdentifierOperand $ Nothing) <$> identifier
+    invertedIdentifierOperand = (flip IdentifierOperand $ Just InvertModifier) <$> (try $ reservedOp "~" *> identifier)
+    lowerIdentifierOperand = (flip IdentifierOperand $ Just LowerModifier) <$> (try $ identifier <* string "'lower")
+    upperIdentifierOperand = (flip IdentifierOperand $ Just UpperModifier) <$> (try $ identifier <* string "'upper")

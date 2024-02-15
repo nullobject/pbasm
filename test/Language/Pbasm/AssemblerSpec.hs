@@ -1,10 +1,9 @@
 module Language.Pbasm.AssemblerSpec where
 
 import Data.Map (empty, fromList)
-import Test.Hspec
-
 import Language.Pbasm.Assembler
 import Language.Pbasm.Core
+import Test.Hspec
 
 main :: IO ()
 main = hspec spec
@@ -14,9 +13,10 @@ spec = do
   describe "assemblerState" $ do
     it "returns an empty assembler state" $ do
       assemblerState
-        `shouldBe`
-        State { stateLabelMap    = empty
-              , stateConstantMap = empty }
+        `shouldBe` State
+          { stateLabelMap = empty,
+            stateConstantMap = empty
+          }
 
   describe "runAssembler" $ do
     context "with a unary instruction" $ do
@@ -242,7 +242,7 @@ spec = do
 
     it "ignores unknown statements" $ do
       assemble (NullaryInstruction "lol") `shouldReturn` []
-
-    where assemble instruction = runAssembler ([instruction], constantMap, labelMap)
-          constantMap          = fromList [("lorem", Value 0x01), ("ipsum", Value 0x02)]
-          labelMap             = fromList [("foo", Value 0x001), ("bar", Value 0x002), ("baz", Value 0xFFF)]
+  where
+    assemble instruction = runAssembler ([instruction], constantMap, labelMap)
+    constantMap = fromList [("lorem", Value 0x01), ("ipsum", Value 0x02)]
+    labelMap = fromList [("foo", Value 0x001), ("bar", Value 0x002), ("baz", Value 0xFFF)]

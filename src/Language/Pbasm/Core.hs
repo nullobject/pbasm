@@ -18,21 +18,33 @@ instance Num Value where
   (Value x) + (Value y) = Value (x + y)
   (Value x) - (Value y) = Value (x - y)
   (Value x) * (Value y) = Value (x * y)
-  abs x                 = x
-  signum 0              = 0
-  signum _              = 1
-  fromInteger i         = Value (fromInteger i)
+  abs x = x
+  signum 0 = 0
+  signum _ = 1
+  fromInteger i = Value (fromInteger i)
 
 -- The PicoBlaze has 16 general purpose 8-bit registers.
-data Register =
-    Register0 | Register1 | Register2 | Register3
-  | Register4 | Register5 | Register6 | Register7
-  | Register8 | Register9 | RegisterA | RegisterB
-  | RegisterC | RegisterD | RegisterE | RegisterF
+data Register
+  = Register0
+  | Register1
+  | Register2
+  | Register3
+  | Register4
+  | Register5
+  | Register6
+  | Register7
+  | Register8
+  | Register9
+  | RegisterA
+  | RegisterB
+  | RegisterC
+  | RegisterD
+  | RegisterE
+  | RegisterF
   deriving (Enum, Eq, Show)
 
-data Condition =
-    ZeroCondition
+data Condition
+  = ZeroCondition
   | NotZeroCondition
   | CarryCondition
   | NotCarryCondition
@@ -40,53 +52,49 @@ data Condition =
 
 readCondition :: String -> Condition
 readCondition s
-  | s == "z"  = ZeroCondition
+  | s == "z" = ZeroCondition
   | s == "nz" = NotZeroCondition
-  | s == "c"  = CarryCondition
+  | s == "c" = CarryCondition
   | s == "nc" = NotCarryCondition
   | otherwise = error $ "Unknown condition: " ++ s
 
 data Modifier
-  = InvertModifier -- ^ Invert the constant value.
-  | LowerModifier  -- ^ The lower 8-bits of the address value.
-  | UpperModifier  -- ^ The upper 4-bits of the address value.
+  = -- | Invert the constant value.
+    InvertModifier
+  | -- | The lower 8-bits of the address value.
+    LowerModifier
+  | -- | The upper 4-bits of the address value.
+    UpperModifier
   deriving (Eq, Show)
 
-data Operand =
-    ValueOperand Value
+data Operand
+  = ValueOperand Value
   | IdentifierOperand Identifier (Maybe Modifier)
   | RegisterOperand Register
   | ConditionOperand Condition
   deriving (Eq, Show)
 
-data Statement =
-    -- Assigns a name to a constant value.
+data Statement
+  = -- Assigns a name to a constant value.
     ConstantDirective Identifier Value
-
-    -- Defines a list of characters for use with OUTPUTK and LOAD&RETURN
+  | -- Defines a list of characters for use with OUTPUTK and LOAD&RETURN
     -- instructions.
-  | StringDirective Identifier String
-
-    -- Defines a list of values for use with OUTPUTK and LOAD&RETURN
+    StringDirective Identifier String
+  | -- Defines a list of values for use with OUTPUTK and LOAD&RETURN
     -- instructions.
-  | TableDirective Identifier [Value]
-
-    -- Forces the assembler to assemble all subsequent instructions starting at
+    TableDirective Identifier [Value]
+  | -- Forces the assembler to assemble all subsequent instructions starting at
     -- the address defined.
-  | AddressDirective Value
-
-    -- Inserts the contents of another file into the program immediately
+    AddressDirective Value
+  | -- Inserts the contents of another file into the program immediately
     -- following the directive.
-  | IncludeDirective FilePath
-
-    -- An instruction of arity 0.
-  | NullaryInstruction String
-
-    -- An instruction of arity 1.
-  | UnaryInstruction String Operand
-
-    -- An instruction of arity 2.
-  | BinaryInstruction String Operand Operand
+    IncludeDirective FilePath
+  | -- An instruction of arity 0.
+    NullaryInstruction String
+  | -- An instruction of arity 1.
+    UnaryInstruction String Operand
+  | -- An instruction of arity 2.
+    BinaryInstruction String Operand Operand
   deriving (Eq, Show)
 
 -- A map from constants to data values.
@@ -97,8 +105,8 @@ type LabelMap = Map Identifier Value
 
 type ParserResult = ([Statement], ConstantMap, LabelMap)
 
-data PbasmException =
-    ParserException String
+data PbasmException
+  = ParserException String
   | AssemblerException String
   | TemplateException String
   deriving (Eq, Show, Typeable)
@@ -120,5 +128,6 @@ isTemplateError _ = False
 -- Prints the first n hexadecimal digits of the given opcode.
 showHex :: Int -> Opcode -> String
 showHex n opcode = printf format value
-  where format = "%0" ++ show n ++ "X"
-        value  = opcode .&. ((1 `shiftL` (n * 4)) - 1)
+  where
+    format = "%0" ++ show n ++ "X"
+    value = opcode .&. ((1 `shiftL` (n * 4)) - 1)

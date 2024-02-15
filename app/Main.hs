@@ -1,5 +1,6 @@
 module Main where
 
+import CLI
 import Language.Pbasm.Assembler
 import Language.Pbasm.Core
 import Language.Pbasm.Parser
@@ -7,23 +8,21 @@ import Language.Pbasm.Template
 import System.Console.CmdArgs hiding (args, name)
 import System.FilePath
 
-import CLI
-
 main :: IO ()
 main = do
   args <- cmdArgs pbasm
 
-  let inputFilePath    = pbasmInputFilePath args
+  let inputFilePath = pbasmInputFilePath args
   let templateFilePath = pbasmTemplateFilePath args
-  let name             = takeBaseName inputFilePath
-  let hexFilePath      = takeBaseName inputFilePath <.> "hex"
-  let entityFilePath   = name <.> "vhd"
+  let name = takeBaseName inputFilePath
+  let hexFilePath = takeBaseName inputFilePath <.> "hex"
+  let entityFilePath = name <.> "vhd"
 
   assembleFile inputFilePath hexFilePath >>= renderTemplate templateFilePath entityFilePath name >> return ()
 
 -- Assembles the file at the given file path.
 assembleFile :: FilePath -> FilePath -> IO [Opcode]
-assembleFile "" _ = do {putStrLn "no input file"; return []}
+assembleFile "" _ = do putStrLn "no input file"; return []
 assembleFile inputFilePath hexFilePath = do
   parsePsmFile inputFilePath >>= runAssembler >>= writeHexFile hexFilePath
 

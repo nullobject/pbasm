@@ -1,11 +1,10 @@
 module Language.Pbasm.Parser.TokenSpec where
 
+import Language.Pbasm.Core
+import Language.Pbasm.Parser.Token
 import Test.Hspec
 import Text.Parsec.Error (ParseError)
 import Text.ParserCombinators.Parsec (CharParser, runParser)
-
-import Language.Pbasm.Core
-import Language.Pbasm.Parser.Token
 
 fromRight :: (Show a) => Either a b -> b
 fromRight (Right x) = x

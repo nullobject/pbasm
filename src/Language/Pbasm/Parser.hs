@@ -1,18 +1,18 @@
 -- This module defines the parser which is used to parse the assembly source
 -- code into an AST.
 module Language.Pbasm.Parser
-  ( Parser
-  , statement
-  , statements
-  , parsePsmFile
-  ) where
+  ( Parser,
+    statement,
+    statements,
+    parsePsmFile,
+  )
+where
 
 import Control.Exception (throw)
-import Text.ParserCombinators.Parsec hiding (Parser, State, label)
-
 import Language.Pbasm.Core
 import Language.Pbasm.Parser.State
 import Language.Pbasm.Parser.Token
+import Text.ParserCombinators.Parsec hiding (Parser, State, label)
 
 type Parser a = CharParser State a
 
@@ -38,17 +38,18 @@ directive = constantDirective
 -- instructions. Ideally we could generate these automatically.
 nullaryInstructions :: [Parser Statement]
 nullaryInstructions =
-  [ returnInstruction
-  , disableInterruptInstruction
-  , enableInterruptInstruction
-  , returniDisableInstruction
-  , returniEnableInstruction
+  [ returnInstruction,
+    disableInterruptInstruction,
+    enableInterruptInstruction,
+    returniDisableInstruction,
+    returniEnableInstruction
   ]
-  where returnInstruction           = (NullaryInstruction "return")            <$ reserved "return"
-        disableInterruptInstruction = (NullaryInstruction "disable interrupt") <$ reserved "disable" <* reserved "interrupt"
-        enableInterruptInstruction  = (NullaryInstruction "enable interrupt")  <$ reserved "enable"  <* reserved "interrupt"
-        returniDisableInstruction   = (NullaryInstruction "returni disable")   <$ reserved "returni" <* reserved "disable"
-        returniEnableInstruction    = (NullaryInstruction "returni enable")    <$ reserved "returni" <* reserved "enable"
+  where
+    returnInstruction = (NullaryInstruction "return") <$ reserved "return"
+    disableInterruptInstruction = (NullaryInstruction "disable interrupt") <$ reserved "disable" <* reserved "interrupt"
+    enableInterruptInstruction = (NullaryInstruction "enable interrupt") <$ reserved "enable" <* reserved "interrupt"
+    returniDisableInstruction = (NullaryInstruction "returni disable") <$ reserved "returni" <* reserved "disable"
+    returniEnableInstruction = (NullaryInstruction "returni enable") <$ reserved "returni" <* reserved "enable"
 
 -- Parses an instruction of arity 1.
 unaryInstruction :: String -> CharParser u Statement
@@ -64,8 +65,9 @@ instruction = do
   i <- choice $ binaryInstructions ++ unaryInstructions ++ nullaryInstructions
   updateState incrementAddress
   return i
-  where unaryInstructions  = map unaryInstruction  unaryInstructionNames
-        binaryInstructions = map binaryInstruction binaryInstructionNames
+  where
+    unaryInstructions = map unaryInstruction unaryInstructionNames
+    binaryInstructions = map binaryInstruction binaryInstructionNames
 
 -- Parses a statement.
 statement :: Parser Statement
@@ -74,8 +76,9 @@ statement = optional label *> (directive <|> instruction)
 -- Parses multiple statements.
 statements :: Parser ParserResult
 statements = whiteSpace *> ((,,) <$> many statement <*> constantMap <*> labelMap) <* eof
-  where constantMap = stateConstantMap <$> getState
-        labelMap    = stateLabelMap    <$> getState
+  where
+    constantMap = stateConstantMap <$> getState
+    labelMap = stateLabelMap <$> getState
 
 -- Parses a PSM file.
 parsePsmFile :: FilePath -> IO ParserResult
@@ -83,4 +86,4 @@ parsePsmFile filePath = do
   result <- runParser statements parserState filePath <$> readFile filePath
   case result of
     Right x -> return x
-    Left e  -> throw $ ParserException $ show e
+    Left e -> throw $ ParserException $ show e
