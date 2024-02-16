@@ -25,8 +25,31 @@ import Data.Char (digitToInt)
 import Data.List (nub)
 import Data.List.Split (splitOn)
 import Language.Pbasm.Core
-import Text.ParserCombinators.Parsec hiding (label)
-import Text.ParserCombinators.Parsec.Language
+  ( Condition,
+    Modifier (..),
+    Operand (..),
+    Register,
+    Value (..),
+    readCondition,
+  )
+import Text.ParserCombinators.Parsec
+  ( CharParser,
+    alphaNum,
+    between,
+    char,
+    choice,
+    digit,
+    hexDigit,
+    many1,
+    notFollowedBy,
+    oneOf,
+    satisfy,
+    string,
+    try,
+    (<?>),
+    (<|>),
+  )
+import Text.ParserCombinators.Parsec.Language (LanguageDef, emptyDef)
 import Text.ParserCombinators.Parsec.Token (TokenParser)
 import qualified Text.ParserCombinators.Parsec.Token as Token
 

@@ -1,9 +1,23 @@
 module Language.Pbasm.AssemblerSpec where
 
 import Data.Map (empty, fromList)
-import Language.Pbasm.Assembler
+import Language.Pbasm.Assembler (State (..), assemblerState, runAssembler)
 import Language.Pbasm.Core
+  ( Condition (..),
+    Operand (..),
+    Register (..),
+    Statement (..),
+    Value (..),
+  )
 import Test.Hspec
+  ( Spec,
+    context,
+    describe,
+    hspec,
+    it,
+    shouldBe,
+    shouldReturn,
+  )
 
 main :: IO ()
 main = hspec spec

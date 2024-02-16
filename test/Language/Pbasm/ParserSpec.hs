@@ -3,9 +3,23 @@ module Language.Pbasm.ParserSpec where
 import Control.Exception (throw)
 import Data.Map (empty, fromList)
 import Language.Pbasm.Core
-import Language.Pbasm.Parser
+  ( Condition (..),
+    Operand (..),
+    PbasmException (..),
+    Register (..),
+    Statement (..),
+    isParserError,
+  )
+import Language.Pbasm.Parser (statement, statements)
 import Language.Pbasm.Parser.State (State, parserState)
 import Test.Hspec
+  ( Spec,
+    describe,
+    hspec,
+    it,
+    shouldReturn,
+    shouldThrow,
+  )
 import Text.ParserCombinators.Parsec (CharParser, runParser)
 
 parse :: CharParser State a -> [Char] -> IO a

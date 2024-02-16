@@ -1,11 +1,11 @@
 module Language.Pbasm.Core where
 
 import Control.Exception (Exception)
-import Data.Bits
+import Data.Bits (Bits (shiftL, (.&.)))
 import Data.Map (Map)
 import Data.Typeable (Typeable)
 import Data.Word (Word32)
-import Text.Printf
+import Text.Printf (printf)
 
 type Identifier = String
 

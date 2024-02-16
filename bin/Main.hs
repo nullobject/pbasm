@@ -1,12 +1,15 @@
 module Main where
 
 import CLI
-import Language.Pbasm.Assembler
-import Language.Pbasm.Core
-import Language.Pbasm.Parser
-import Language.Pbasm.Template
-import System.Console.CmdArgs hiding (args, name)
-import System.FilePath
+  ( Pbasm (..),
+    pbasm,
+  )
+import Language.Pbasm.Assembler (runAssembler)
+import Language.Pbasm.Core (Opcode, showHex)
+import Language.Pbasm.Parser (parsePsmFile)
+import Language.Pbasm.Template (State (..), runTemplate, templateState)
+import System.Console.CmdArgs (cmdArgs)
+import System.FilePath (takeBaseName, (<.>))
 
 main :: IO ()
 main = do

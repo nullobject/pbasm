@@ -10,9 +10,41 @@ where
 
 import Control.Exception (throw)
 import Language.Pbasm.Core
+  ( Identifier,
+    ParserResult,
+    PbasmException (..),
+    Statement (..),
+  )
 import Language.Pbasm.Parser.State
+  ( State (..),
+    addConstant,
+    addLabel,
+    incrementAddress,
+    parserState,
+  )
 import Language.Pbasm.Parser.Token
-import Text.ParserCombinators.Parsec hiding (Parser, State, label)
+  ( binaryInstructionNames,
+    colon,
+    comma,
+    identifier,
+    operand,
+    reserved,
+    unaryInstructionNames,
+    value,
+    whiteSpace,
+  )
+import Text.ParserCombinators.Parsec
+  ( CharParser,
+    choice,
+    eof,
+    getState,
+    many,
+    optional,
+    runParser,
+    try,
+    updateState,
+    (<|>),
+  )
 
 type Parser a = CharParser State a
 

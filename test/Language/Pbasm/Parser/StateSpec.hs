@@ -1,9 +1,15 @@
 module Language.Pbasm.Parser.StateSpec where
 
 import Data.Map (empty, fromList)
-import Language.Pbasm.Core
+import Language.Pbasm.Core (Statement (..))
 import Language.Pbasm.Parser.State
-import Test.Hspec
+  ( State (..),
+    addConstant,
+    addLabel,
+    incrementAddress,
+    parserState,
+  )
+import Test.Hspec (Spec, describe, hspec, it, shouldBe)
 
 main :: IO ()
 main = hspec spec

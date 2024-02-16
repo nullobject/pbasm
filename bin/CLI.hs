@@ -8,6 +8,19 @@ module CLI
 where
 
 import System.Console.CmdArgs
+  ( Data,
+    Default (..),
+    Typeable,
+    args,
+    details,
+    explicit,
+    help,
+    name,
+    opt,
+    summary,
+    typFile,
+    (&=),
+  )
 
 data Pbasm = Pbasm
   { -- | Input file path

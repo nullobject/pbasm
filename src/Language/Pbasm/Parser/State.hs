@@ -10,6 +10,12 @@ where
 
 import Data.Map (empty, insert)
 import Language.Pbasm.Core
+  ( ConstantMap,
+    Identifier,
+    LabelMap,
+    Statement (..),
+    Value,
+  )
 
 data State = State
   { stateAddress :: Value,

@@ -4,7 +4,7 @@ module Language.Pbasm.Template.State
   )
 where
 
-import Language.Pbasm.Core
+import Language.Pbasm.Core (Opcode)
 
 data State = State
   { -- | Template name

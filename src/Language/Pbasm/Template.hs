@@ -8,12 +8,26 @@ module Language.Pbasm.Template
 where
 
 import Control.Exception (throw)
-import Data.Bits
+import Data.Bits (Bits (shiftL, shiftR, (.&.), (.|.)))
 import Data.List.Split (chunksOf)
-import Language.Pbasm.Core
+import Language.Pbasm.Core (Opcode, PbasmException (..), showHex)
 import Language.Pbasm.Parser.Token (hexadecimal)
-import Language.Pbasm.Template.State
-import Text.ParserCombinators.Parsec hiding (Parser, State, label)
+import Language.Pbasm.Template.State (State (..), templateState)
+import Text.ParserCombinators.Parsec
+  ( CharParser,
+    between,
+    getState,
+    many,
+    many1,
+    noneOf,
+    runParser,
+    skipMany,
+    string,
+    try,
+    updateState,
+    (<?>),
+    (<|>),
+  )
 
 type Parser a = CharParser State a
 

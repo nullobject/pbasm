@@ -1,7 +1,14 @@
 module Language.Pbasm.TemplateSpec where
 
-import Language.Pbasm.Template
+import Language.Pbasm.Template (State (..), runTemplate, templateState)
 import Test.Hspec
+  ( Spec,
+    context,
+    describe,
+    hspec,
+    it,
+    shouldReturn,
+  )
 
 main :: IO ()
 main = hspec spec

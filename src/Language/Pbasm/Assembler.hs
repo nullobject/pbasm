@@ -7,12 +7,24 @@ module Language.Pbasm.Assembler
   )
 where
 
-import Control.Monad.Reader
-import Data.Bits
+import Control.Monad.Reader (Reader, asks, runReader)
+import Data.Bits (Bits (complement, shiftL, shiftR, (.&.), (.|.)))
 import Data.Map (empty, (!))
-import Data.Maybe
-import Data.Word
+import Data.Maybe (catMaybes)
+import Data.Word (Word32)
 import Language.Pbasm.Core
+  ( Condition (..),
+    ConstantMap,
+    Identifier,
+    LabelMap,
+    Modifier (..),
+    Opcode,
+    Operand (..),
+    ParserResult,
+    Register,
+    Statement (..),
+    Value (..),
+  )
 
 data State = State
   { stateLabelMap :: LabelMap,

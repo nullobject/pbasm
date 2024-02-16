@@ -1,8 +1,26 @@
 module Language.Pbasm.Parser.TokenSpec where
 
 import Language.Pbasm.Core
+  ( Condition (..),
+    Modifier (..),
+    Operand (..),
+    Register (..),
+  )
 import Language.Pbasm.Parser.Token
+  ( condition,
+    operand,
+    pointer,
+    register,
+    value,
+  )
 import Test.Hspec
+  ( Spec,
+    describe,
+    hspec,
+    it,
+    shouldBe,
+    shouldContain,
+  )
 import Text.Parsec.Error (ParseError)
 import Text.ParserCombinators.Parsec (CharParser, runParser)
 
